@@ -1,0 +1,182 @@
+/* ========== 中部三卡 ========== */
+.row-mid {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 1fr;
+  align-items: stretch;
+}
+
+/* ---- 左：最新文章卡 ---- */
+.post-card {
+  padding: 22px 22px 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-body { display: flex; flex-direction: column; height: 100%; }
+
+.post-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #818cf8, #6366f1);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+
+.post-tag .material-symbols-rounded { font-size: 0.8rem; }
+
+.post-date {
+  font-size: 0.7rem;
+  color: rgba(31, 41, 55, 0.5);
+  margin-bottom: 14px;
+}
+
+.post-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.45;
+  color: #111827;
+  margin-top: auto;
+  margin-bottom: 16px;
+}
+
+.post-dots { display: flex; gap: 6px; }
+
+.post-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.post-dots span.active {
+  width: 18px;
+  border-radius: 999px;
+  background: #6366f1;
+}
+
+/* ---- 中：大图卡 ---- */
+.feature-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 240px;
+  padding: 0;
+}
+
+.feature-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+.feature-overlay {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 22px 24px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.65) 0%,
+    rgba(0, 0, 0, 0.15) 45%,
+    transparent 100%
+  );
+  color: #fff;
+}
+
+.feature-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.feature-sub {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 14px;
+}
+
+.feature-dots { display: flex; gap: 6px; }
+
+.feature-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.feature-dots span.active {
+  width: 18px;
+  border-radius: 999px;
+  background: #fff;
+}
+
+/* ---- 右：日间模式卡 ---- */
+.mode-card {
+  padding: 26px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+}
+
+.mode-icon {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: conic-gradient(
+    from 0deg,
+    #fbbf24, #f472b6, #a855f7, #6366f1, #22d3ee, #34d399, #fbbf24
+  );
+  box-shadow:
+    0 0 0 6px rgba(255, 255, 255, 0.6),
+    0 8px 24px rgba(168, 85, 247, 0.35);
+  position: relative;
+}
+
+.mode-icon::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.mode-icon .material-symbols-rounded {
+  position: relative;
+  z-index: 1;
+  font-size: 2rem;
+  background: linear-gradient(135deg, #f472b6, #a855f7, #6366f1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.mode-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.mode-desc {
+  font-size: 0.78rem;
+  color: rgba(31, 41, 55, 0.55);
+  letter-spacing: 1px;
+}

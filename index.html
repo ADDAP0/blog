@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>米饭多加水の小窝</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/background.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/search.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/hero.css">
+  <link rel="stylesheet" href="css/mid-cards.css">
+  <link rel="stylesheet" href="css/footer.css">
+<link rel="stylesheet" href="css/profile-card.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+</head>
+<body>
+
+  <!-- 幻灯片背景 -->
+  <div class="slideshow" id="slideshow"></div>
+  <div class="overlay"></div>
+
+  <!-- 顶部导航栏 -->
+  <nav class="navbar">
+    <div class="nav-brand-wrap">
+  <a href="#" class="nav-brand" aria-label="米饭多加水の小窝">
+    <span class="brand-text">米饭多加水の小窝</span>
+  </a>
+</div>
+
+  <!-- 中间菜单 -->
+  <ul class="nav-menu">
+  <li class="nav-li">
+    <a href="#" class="nav-item active">
+      <span class="material-symbols-rounded">home</span>主页
+    </a>
+  </li>
+
+  <li class="nav-li has-dropdown">
+    <a href="#" class="nav-item">
+      <span class="material-symbols-rounded">description</span>文章
+      <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+    </a>
+    <div class="dropdown">
+      <a href="#" class="drop-item">
+        <span class="material-symbols-rounded">article</span>
+        <div>
+          <b>全部文章</b>
+          <i>按时间倒序浏览</i>
+        </div>
+      </a>
+      <a href="#" class="drop-item">
+        <span class="material-symbols-rounded">category</span>
+        <div>
+          <b>分类</b>
+          <i>按主题归类</i>
+        </div>
+      </a>
+      <a href="#" class="drop-item">
+        <span class="material-symbols-rounded">sell</span>
+        <div>
+          <b>标签</b>
+          <i>按关键词找</i>
+        </div>
+      </a>
+      <a href="#" class="drop-item">
+        <span class="material-symbols-rounded">archive</span>
+        <div>
+          <b>归档</b>
+          <i>按年月排列</i>
+        </div>
+      </a>
+    </div>
+  </li>
+
+  <li class="nav-li has-dropdown">
+    <a href="#" class="nav-item">
+      <span class="material-symbols-rounded">group</span>社交
+      <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+    </a>
+    <div class="dropdown">
+      <a href="https://github.com/ADDAP0" class="drop-item" target="_blank">
+        <span class="material-symbols-rounded">code</span>
+        <div><b>GitHub</b><i>代码仓库</i></div>
+      </a>
+      <a href="https://space.bilibili.com/3546644651968606" class="drop-item" target="_blank">
+        <span class="material-symbols-rounded">chat</span>
+        <div><b>Bilibili</b><i>视频分享</i></div>
+      </a>
+      <a href="mailto:3840447667@qq.com" class="drop-item">
+        <span class="material-symbols-rounded">mail</span>
+        <div><b>邮箱</b><i>3840447667@qq.com</i></div>
+      </a>
+    </div>
+  </li>
+
+  <li class="nav-li has-dropdown">
+    <a href="#" class="nav-item">
+      <span class="material-symbols-rounded">person</span>我的
+      <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+    </a>
+    <div class="dropdown">
+      <a href="#" class="drop-item">
+        <span class="material-symbols-rounded">badge</span>
+        <div><b>关于我</b><i>自我介绍</i></div>
+      </a>
+      <a href="#" class="drop-item">
+        <span class="material-symbols-rounded">photo_library</span>
+        <div><b>相册</b><i>生活记录</i></div>
+      </a>
+      <a href="#" class="drop-item">
+        <span class="material-symbols-rounded">favorite</span>
+        <div><b>收藏</b><i>喜欢的东西</i></div>
+      </a>
+    </div>
+  </li>
+
+  <li class="nav-li has-dropdown">
+    <a href="#" class="nav-item">
+      <span class="material-symbols-rounded">info</span>关于
+      <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+    </a>
+    <div class="dropdown">
+      <a href="#" class="drop-item">
+        <span class="material-symbols-rounded">info</span>
+        <div><b>站点介绍</b><i>这个博客是什么</i></div>
+      </a>
+      <a href="#" class="drop-item">
+        <span class="material-symbols-rounded">update</span>
+        <div><b>更新日志</b><i>最近改了什么</i></div>
+      </a>
+      <a href="#" class="drop-item">
+        <span class="material-symbols-rounded">verified</span>
+        <div><b>版权声明</b><i>内容授权说明</i></div>
+      </a>
+    </div>
+  </li>
+
+  <li class="nav-li has-dropdown">
+    <a href="#" class="nav-item">
+      <span class="material-symbols-rounded">link</span>链接
+      <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+    </a>
+    <div class="dropdown">
+      <a href="#" class="drop-item">
+        <span class="material-symbols-rounded">public</span>
+        <div><b>友情链接</b><i>朋友们</i></div>
+      </a>
+      <a href="#" class="drop-item">
+        <span class="material-symbols-rounded">handshake</span>
+        <div><b>合作</b><i>联系方式</i></div>
+      </a>
+    </div>
+  </li>
+</ul>
+</nav>
+
+<main class="hero">
+
+     <!-- 搜索条 -->
+  <div class="search-bar" id="searchBar">
+  <span class="material-symbols-rounded search-icon">search</span>
+  <input type="text" id="searchInput" placeholder="搜索文章、标签、想法...">
+  <button class="search-clear" id="searchClear" title="清除" aria-label="清除">
+    <span class="material-symbols-rounded">close</span>
+  </button>
+  <kbd>⌘K</kbd>
+</div>
+
+  <!-- ========== 第一行：博主 + 音乐 ========== -->
+  <div class="row row-top">
+    <!-- 博主 -->
+    <section class="card info-card">
+      <div class="info-top">
+        <div class="info-avatar">
+          <img src="images/avatar.jpg" alt="avatar">
+        </div>
+        <div class="info-text">
+          <h1 class="info-name">米饭多加水</h1>
+          <p class="info-desc">
+            普普通通の大学生。
+          </p>
+        </div>
+      </div>
+
+      <div class="info-divider"></div>
+
+      <div class="info-bottom">
+        <div class="stats">
+          <div class="stat"><b data-key="articles">0</b><i>文章</i></div>
+          <div class="stat"><b data-key="essays">0</b><i>杂谈</i></div>
+          <div class="stat"><b data-key="photos">0</b><i>照片</i></div>
+        </div>
+        <div class="socials">
+          <a href="https://github.com/ADDAP0" class="sbtn"><span class="material-symbols-rounded">code</span></a>
+          <a href="#" class="sbtn"><span class="material-symbols-rounded">dns</span></a>
+          <a href="#" class="sbtn"><span class="material-symbols-rounded">public</span></a>
+          <a href="mailto:3840447667@qq.com" class="sbtn"><span class="material-symbols-rounded">mail</span></a>
+          <a href="https://space.bilibili.com/3546644651968606" class="sbtn"><span class="material-symbols-rounded">smart_display</span></a>
+          <a href="#" class="sbtn"><span class="material-symbols-rounded">chat</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 音乐 -->
+    <section class="card music-card">
+  <audio id="audio" preload="metadata"></audio>
+
+  <div class="music-top">
+    <div class="music-cover" id="musicCover">
+      <img src="images/cover.jpg" alt="cover" id="coverImg">
+    </div>
+    <div class="music-info">
+      <span class="music-tag">
+        <span class="material-symbols-rounded">cloud</span> CLOUD MUSIC
+      </span>
+      <h2 class="music-title" id="musicTitle">云月谣</h2>
+      <p class="music-artist" id="musicArtist">兰音 Reine</p>
+    </div>
+  </div>
+
+  <div class="music-lyric" id="musicLyric">作词：聂蓉绝恋</div>
+
+  <div class="music-progress">
+    <span class="time" id="timeNow">00:00</span>
+    <div class="progress-track" id="progressTrack">
+      <div class="progress-played" id="musicProgress"></div>
+    </div>
+    <span class="time" id="timeTotal">00:00</span>
+  </div>
+
+  <div class="music-controls">
+    <button class="ctrl-btn" id="prevBtn" title="上一首">
+      <span class="material-symbols-rounded">skip_previous</span>
+    </button>
+    <button class="ctrl-btn play" id="playBtn" title="播放">
+      <span class="material-symbols-rounded">play_arrow</span>
+    </button>
+    <button class="ctrl-btn" id="nextBtn" title="下一首">
+      <span class="material-symbols-rounded">skip_next</span>
+    </button>
+  </div>
+</section>
+  </div>
+
+  <!-- ========== 歌词条 ========== -->
+  <div class="lyric-bar">
+  <span class="lyric-text" id="lyricText">作词：聂蓉绝恋</span>
+  <span class="material-symbols-rounded lyric-icon">music_note</span>
+</div>
+
+  <!-- ========== 中部三卡 ========== -->
+  <div class="row row-mid">
+
+    <!-- 左：最新文章卡 -->
+    <section class="card post-card">
+      <div class="post-body">
+        <span class="post-tag">
+          <span class="material-symbols-rounded">bookmark</span> LATEST INSIGHT
+        </span>
+        <span class="post-date">2026.04.27 09:19</span>
+
+        <h3 class="post-title">Leetcode一百题——将有序数组转换为二叉搜索树</h3>
+
+        <div class="post-dots">
+          <span class="active"></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 中：大图卡 -->
+    <section class="card feature-card">
+      <img src="images/feature.jpg" alt="feature" class="feature-img">
+      <div class="feature-overlay">
+        <h3 class="feature-title">板栗猫猫</h3>
+        <p class="feature-sub">这周末带猫猫去吃吃</p>
+        <div class="feature-dots">
+          <span class="active"></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 右：日间模式卡 -->
+    <section class="card mode-card">
+      <div class="mode-icon">
+        <span class="material-symbols-rounded">flare</span>
+      </div>
+      <h3 class="mode-title">日间模式</h3>
+      <p class="mode-desc">奈樱漫游的清晨</p>
+    </section>
+
+  </div>
+
+  <!-- ========== 底部条 ========== -->
+  <div class="footer-bar">
+    <div class="clock" id="clock">15:32:13</div>
+
+    <div class="status">
+      <span class="dot-green"></span>
+      <span>系统已稳定运行：35天 15小时</span>
+    </div>
+
+    <div class="tags">
+      <span class="tag"><i class="tag-dot t1"></i>Next.js 15</span>
+      <span class="tag"><i class="tag-dot t2"></i>React 19</span>
+      <span class="tag"><i class="tag-dot t3"></i>Tailwind 4</span>
+    </div>
+
+    <div class="icp">萌ICP备20260240号</div>
+  </div>
+
+</main>
+
+<section class="profile-card">
+  <div class="profile-left">
+    <div class="profile-header">
+      <div class="avatar">
+        <img src="images/avatar.jpg" alt="avatar">
+      </div>
+      <div class="profile-info">
+        <h2 class="profile-name">米饭多加水</h2>
+        <p class="profile-bio">一名普普通通の大学生~</p>
+      </div>
+    </div>
+
+    <!-- 社交按钮 -->
+    <div class="social-row">
+      <a href="https://github.com/ADDAP0" class="social-btn" title="GitHub">
+        <span class="material-symbols-rounded">code</span>
+      </a>
+      <a href="mailto:3840447667@qq.com" class="social-btn" title="邮箱">
+        <span class="material-symbols-rounded">mail</span>
+      </a>
+      <a href="#" class="social-btn" title="RSS">
+        <span class="material-symbols-rounded">rss_feed</span>
+      </a>
+      <a href="#" class="social-btn" title="设置">
+        <span class="material-symbols-rounded">settings</span>
+      </a>
+    </div>
+
+    <!-- 热力图 -->
+    <div class="heatmap">
+      <div class="heatmap-months">
+        <span>1</span><span>2</span><span>3</span><span>4</span>
+        <span>5</span><span>6</span><span>7</span><span>8</span>
+        <span>9</span><span>10</span><span>11</span><span>12</span>
+      </div>
+      <div class="heatmap-grid" id="heatmap"></div>
+    </div>
+  </div>
+
+  <!-- 右栏 -->
+  <div class="profile-right">
+    <!-- 已运行 -->
+    <div class="uptime-title">
+      <span>已运行</span>
+      <span class="uptime-since">自 2026.10.10</span>
+    </div>
+
+    <!-- 计时数字 -->
+    <div class="uptime-grid">
+      <div class="uptime-item"><b id="t-year">00</b><i>年</i></div>
+      <div class="uptime-item"><b id="t-month">00</b><i>月</i></div>
+      <div class="uptime-item"><b id="t-day">28</b><i>日</i></div>
+      <div class="uptime-item"><b id="t-hour">23</b><i>时</i></div>
+      <div class="uptime-item"><b id="t-min">04</b><i>分</i></div>
+      <div class="uptime-item"><b id="t-sec">08</b><i>秒</i></div>
+    </div>
+
+    <!-- 进度条 -->
+    <div class="progress-row">
+      <div class="progress-head">
+        <span>本月已过</span>
+        <b id="p-month-text">32%</b>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="p-month"></div>
+      </div>
+    </div>
+
+    <div class="progress-row">
+      <div class="progress-head">
+        <span>今年已过</span>
+        <b id="p-year-text">78%</b>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="p-year"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <script src="js/slideshow.js"></script>
+  <script src="js/heatmap.js"></script>
+  <script src="js/uptime.js"></script>
+  <script src="js/clock.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/profile-card.js"></script>
+  <script src="js/stats.js"></script>
+  <script src="js/music-player.js"></script>
+</body>
+</html>
