@@ -1,0 +1,22 @@
+[
+  {
+    "file": "2026-10-11-hello-world.md",
+    "title": "Hello World",
+    "date": "2026-10-11",
+    "tags": [
+      "随笔"
+    ],
+    "summary": "我的第一篇文章，记录一下搭建博客的过程。",
+    "slug": "2026-10-11-hello-world"
+  },
+  {
+    "file": "2026-10-10-hello-world.md",
+    "title": "Hello World",
+    "date": "2026-10-10",
+    "tags": [
+      "随笔"
+    ],
+    "summary": "这是我的第一篇文章。…",
+    "slug": "2026-10-10-hello-world"
+  }
+]

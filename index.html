@@ -253,21 +253,20 @@
   <!-- ========== 中部三卡 ========== -->
   <div class="row row-mid">
 
-    <!-- 左：最新文章卡 -->
     <section class="card post-card">
-      <div class="post-body">
-        <span class="post-tag">
-          <span class="material-symbols-rounded">bookmark</span> LATEST INSIGHT
-        </span>
-        <span class="post-date">2026.04.27 09:19</span>
+  <div class="post-body">
+    <span class="post-tag">
+      <span class="material-symbols-rounded">bookmark</span> LATEST INSIGHT
+    </span>
+    <span class="post-date" id="latestDate">----.--.-- --:--</span>
 
-        <h3 class="post-title">Leetcode一百题——将有序数组转换为二叉搜索树</h3>
+    <h3 class="post-title" id="latestTitle">加载中…</h3>
 
-        <div class="post-dots">
-          <span class="active"></span><span></span><span></span><span></span>
-        </div>
-      </div>
-    </section>
+    <div class="post-dots">
+      <span class="active"></span><span></span><span></span><span></span>
+    </div>
+  </div>
+</section>
 
     <!-- 中：大图卡 -->
     <section class="card feature-card">
@@ -400,5 +399,6 @@
   <script src="js/profile-card.js"></script>
   <script src="js/stats.js"></script>
   <script src="js/music-player.js"></script>
+  <script src="js/latest-post.js"></script>
 </body>
 </html>
