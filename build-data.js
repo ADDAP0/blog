@@ -2,6 +2,7 @@
    扫描 posts/*.md
    生成 data/heatmap.json（热力图数据）
    生成 data/posts.json  （文章列表，用于首页）
+   更新 data/stats.json  （文章统计）
    =================================================== */
 
 const fs = require('fs');
@@ -10,6 +11,7 @@ const path = require('path');
 const POSTS_DIR     = './posts';
 const HEATMAP_FILE  = './data/heatmap.json';
 const POSTS_FILE    = './data/posts.json';
+const STATS_FILE    = './data/stats.json';
 
 /* ---------- 扫描所有文章 ---------- */
 function scanPosts() {
@@ -114,6 +116,18 @@ function buildPosts(posts) {
   console.log(`✅ 已生成 ${POSTS_FILE}（共 ${posts.length} 篇）`);
 }
 
+/* ---------- 更新文章统计 ---------- */
+function buildStats(posts) {
+  const stats = fs.existsSync(STATS_FILE)
+    ? JSON.parse(fs.readFileSync(STATS_FILE, 'utf-8'))
+    : { articles: 0, essays: 0, photos: 0 };
+
+  stats.articles = posts.length;
+  ensureDir(STATS_FILE);
+  fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2), 'utf-8');
+  console.log(`✅ 已更新 ${STATS_FILE}（文章 ${posts.length} 篇）`);
+}
+
 /* ---------- 工具 ---------- */
 function ensureDir(file) {
   const dir = path.dirname(file);
@@ -125,6 +139,7 @@ function build() {
   const posts = scanPosts();
   buildHeatmap(posts);
   buildPosts(posts);
+  buildStats(posts);
   console.log('');
 }
 
