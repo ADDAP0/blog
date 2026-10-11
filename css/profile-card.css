@@ -158,10 +158,11 @@
 
 .heatmap-grid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  grid-auto-rows: 1fr;
+  grid-template-columns: repeat(12, 1fr);   
+  grid-template-rows: repeat(7, 1fr);
+  grid-auto-flow: column;     
   gap: 4px;
-  aspect-ratio: 12 / 5;
+  aspect-ratio: 12 / 7;                      
 }
 
 .heat-cell {
