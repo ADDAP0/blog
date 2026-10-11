@@ -1,0 +1,191 @@
+/* ========== 更新日志页 ========== */
+.changelog-page {
+  position: relative;
+  z-index: 10;
+  max-width: 900px;
+  width: calc(100% - 120px);
+  margin: 0 auto;
+  padding: 20px 0 40px;
+  animation: fadeUp 0.7s ease both;
+}
+
+/* 页头 */
+.page-header {
+  text-align: center;
+  padding: 32px 0 40px;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #a855f7, #6366f1, #3b82f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.page-sub {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ========== 时间轴 ========== */
+.timeline {
+  position: relative;
+  padding-left: 40px;
+}
+
+/* 竖线 */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    rgba(168, 85, 247, 0.6),
+    rgba(99, 102, 241, 0.6),
+    rgba(59, 130, 246, 0.4)
+  );
+  border-radius: 999px;
+}
+
+/* 单条记录 */
+.tl-item {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+/* 圆点 */
+.tl-item::before {
+  content: '';
+  position: absolute;
+  left: -35px;
+  top: 24px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+  transition: all 0.3s ease;
+}
+
+.tl-item:hover::before {
+  background: #6366f1;
+  box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.25);
+}
+
+/* 卡片 */
+.tl-card {
+  background-color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
+  padding: 20px 24px;
+  color: #1f2937;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.tl-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 18px 44px rgba(99, 102, 241, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* 头部：日期 + 版本 + 标签 */
+.tl-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.tl-date {
+  font-size: 0.78rem;
+  color: rgba(31, 41, 55, 0.55);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+
+.tl-version {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+}
+
+/* 类型标签 */
+.tl-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: #fff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.tl-tag.release { background: linear-gradient(135deg, #f472b6, #ec4899); }
+.tl-tag.feature { background: linear-gradient(135deg, #818cf8, #6366f1); }
+.tl-tag.style   { background: linear-gradient(135deg, #34d399, #10b981); }
+.tl-tag.fix     { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+.tl-tag.init    { background: linear-gradient(135deg, #94a3b8, #64748b); }
+
+/* 标题 */
+.tl-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+/* 条目列表 */
+.tl-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tl-list li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 0.86rem;
+  line-height: 1.8;
+  color: rgba(31, 41, 55, 0.75);
+}
+
+.tl-list li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #a5b4fc;
+}
+
+/* 加载 / 空状态 */
+.loading,
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
