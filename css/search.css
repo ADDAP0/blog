@@ -115,3 +115,112 @@
   transform: scale(0.8);
   pointer-events: none;
 }
+
+/* ========== 搜索结果面板 ========== */
+/* 外面套一层，面板绝对定位在搜索条下方，
+   这样搜索条 focus 时的 scale 不会带着面板一起缩放 */
+.search-wrap {
+  position: relative;
+  margin: 0 0 18px;
+}
+
+.search-wrap .search-bar {
+  margin: 0;
+}
+
+.search-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 300;
+
+  padding: 6px;
+  border-radius: 14px;
+
+  background-color: var(--surface-strong);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--border);
+  box-shadow:
+    var(--shadow-pop),
+    inset 0 1px 0 var(--inner-highlight);
+
+  max-height: 62vh;
+  overflow-y: auto;
+  animation: searchDrop 0.18s ease both;
+}
+
+.search-panel[hidden] { display: none; }
+
+@keyframes searchDrop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.search-item {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background 0.18s ease;
+}
+
+.search-item:hover,
+.search-item.active {
+  background: var(--accent-tint);
+}
+
+.si-title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-bottom: 3px;
+  line-height: 1.45;
+}
+
+.search-item.active .si-title { color: var(--accent-strong); }
+
+.si-title mark,
+.si-snippet mark {
+  background: rgba(99, 102, 241, 0.28);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.si-meta {
+  display: block;
+  font-size: 0.71rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.si-snippet {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--text-soft);
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-empty {
+  padding: 18px 12px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.search-more {
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--hairline);
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}

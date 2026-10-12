@@ -1,9 +1,9 @@
 /* ========== 幻灯片背景 ========== */
 const images = [
-  "images/1.jpg",
-  "images/2.jpg",
-  "images/3.jpg",
-  "images/4.jpg"
+  SITE_ROOT + "images/1.jpg",
+  SITE_ROOT + "images/2.jpg",
+  SITE_ROOT + "images/3.jpg",
+  SITE_ROOT + "images/4.jpg"
 ];
 
 const INTERVAL = 8000;

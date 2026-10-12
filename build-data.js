@@ -3,6 +3,7 @@
    生成 data/heatmap.json        （热力图数据）
    生成 data/posts.json          （文章列表：首页 / 列表页用，不含正文）
    生成 data/content/<slug>.json （每篇的元信息 + 正文，详情页按需加载）
+   生成 data/search-index.json   （标题 + 正文纯文本，供搜索用）
    更新 data/stats.json          （文章统计）
    =================================================== */
 
@@ -14,6 +15,8 @@ const HEATMAP_FILE  = './data/heatmap.json';
 const POSTS_FILE    = './data/posts.json';
 const STATS_FILE    = './data/stats.json';
 const CONTENT_DIR   = './data/content';
+const SEARCH_FILE   = './data/search-index.json';
+const GALLERY_FILE  = './data/gallery.json';
 
 // 没写 category 的文章归到这里
 const DEFAULT_CATEGORY = '未分类';
@@ -45,7 +48,10 @@ function scanPosts() {
     }
 
     const fm = fmMatch[1];
-    const body = fmMatch[2].trim();
+    // 正文统一成 LF。Windows 上（core.autocrlf=true）签出的 .md 是 CRLF，
+    // 不规范化的话本地生成的 JSON 会和 CI(Linux) 生成的不一致，
+    // 结果是 Actions 每次跑完都多出一个「更新数据」提交。
+    const body = fmMatch[2].trim().replace(/\r\n/g, '\n');
 
     // 抓字段
     const title = (fm.match(/title:\s*(.+)/) || [])[1]?.trim().replace(/^["']|["']$/g, '');
@@ -76,7 +82,6 @@ function scanPosts() {
       .slice(0, 100) + '…';
 
     posts.push({
-      file,
       title,
       date,
       tags,
@@ -103,13 +108,11 @@ function buildHeatmap(posts) {
     dateCount[p.date] = (dateCount[p.date] || 0) + 1;
   });
 
-  const max = Math.max(1, ...Object.values(dateCount));
-
+  // 只记「一天几篇」就够了。色阶由前端按实际显示出来的周去算；
+  // 这里以前还顺手算了个 level，但前端从来不读，而且两边口径不一致。
   const result = {};
   Object.keys(dateCount).forEach(date => {
-    const count = dateCount[date];
-    const level = Math.min(Math.ceil((count / max) * 4), 4);
-    result[date] = { count, level };
+    result[date] = { count: dateCount[date] };
   });
 
   ensureDir(HEATMAP_FILE);
@@ -140,7 +143,6 @@ function buildContent(posts) {
     fs.writeFileSync(
       path.join(CONTENT_DIR, file),
       JSON.stringify({
-        slug:     p.slug,
         title:    p.title,
         date:     p.date,
         tags:     p.tags,
@@ -163,16 +165,64 @@ function buildContent(posts) {
   console.log(`✅ 已生成 ${CONTENT_DIR}/（共 ${posts.length} 篇正文）`);
 }
 
-/* ---------- 更新文章统计 ---------- */
+/* ---------- 正文转纯文本（喂给搜索） ---------- */
+function plainText(md) {
+  return String(md)
+    .replace(/^\s*```.*$/gm, '')             // 去掉围栏行，保留代码内容
+    .replace(/`([^`]*)`/g, '$1')             // 行内代码去反引号
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')   // 图片整条丢掉
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1') // 链接只留文字
+    .replace(/^\s*#{1,6}\s+/gm, '')          // 标题符号
+    .replace(/^\s*>\s?/gm, '')               // 引用符号
+    .replace(/^\s*[-*+]\s+/gm, '')           // 列表符号
+    .replace(/^\s*\d+\.\s+/gm, '')
+    .replace(/[*_~|]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/* ---------- 生成 search-index.json ---------- */
+function buildSearchIndex(posts) {
+  const index = posts.map(p => ({
+    slug:     p.slug,
+    title:    p.title,
+    date:     p.date,
+    category: p.category,
+    tags:     p.tags,
+    text:     plainText(p.body),
+  }));
+
+  ensureDir(SEARCH_FILE);
+  fs.writeFileSync(SEARCH_FILE, JSON.stringify(index, null, 2), 'utf-8');
+
+  const kb = (fs.statSync(SEARCH_FILE).size / 1024).toFixed(1);
+  console.log(`✅ 已生成 ${SEARCH_FILE}（${index.length} 条，${kb} KB）`);
+}
+
+/* ---------- 数一数相册里有多少张照片 ---------- */
+function countPhotos() {
+  if (!fs.existsSync(GALLERY_FILE)) return 0;
+  try {
+    const list = JSON.parse(fs.readFileSync(GALLERY_FILE, 'utf-8'));
+    return Array.isArray(list) ? list.length : 0;
+  } catch (e) {
+    console.warn('  ⚠️  gallery.json 解析失败，照片数按 0 记');
+    return 0;
+  }
+}
+
+/* ---------- 更新站点统计 ---------- */
 function buildStats(posts) {
   const stats = fs.existsSync(STATS_FILE)
     ? JSON.parse(fs.readFileSync(STATS_FILE, 'utf-8'))
     : { articles: 0, essays: 0, photos: 0 };
 
   stats.articles = posts.length;
+  stats.photos   = countPhotos();
+
   ensureDir(STATS_FILE);
   fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2), 'utf-8');
-  console.log(`✅ 已更新 ${STATS_FILE}（文章 ${posts.length} 篇）`);
+  console.log(`✅ 已更新 ${STATS_FILE}（文章 ${stats.articles} 篇 / 照片 ${stats.photos} 张）`);
 }
 
 /* ---------- 工具 ---------- */
@@ -187,6 +237,7 @@ function build() {
   buildHeatmap(posts);
   buildPosts(posts);
   buildContent(posts);
+  buildSearchIndex(posts);
   buildStats(posts);
   console.log('');
 }

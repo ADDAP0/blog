@@ -1,0 +1,58 @@
+[
+  {
+    "category": "常逛的网站",
+    "name": "MDN Web Docs",
+    "url": "https://developer.mozilla.org/zh-CN/",
+    "desc": "查 HTML / CSS / JavaScript 文档，首选这里。",
+    "icon": "menu_book"
+  },
+  {
+    "category": "常逛的网站",
+    "name": "Can I use",
+    "url": "https://caniuse.com/",
+    "desc": "写 CSS 之前先查一下浏览器支持情况。",
+    "icon": "checklist"
+  },
+  {
+    "category": "常逛的网站",
+    "name": "GitHub",
+    "url": "https://github.com/",
+    "desc": "放代码的地方，也是找现成轮子的地方。",
+    "icon": "code"
+  },
+  {
+    "category": "顺手的小工具",
+    "name": "Squoosh",
+    "url": "https://squoosh.app/",
+    "desc": "在线压图片，写完博客处理配图很常用。",
+    "icon": "image"
+  },
+  {
+    "category": "顺手的小工具",
+    "name": "Coolors",
+    "url": "https://coolors.co/",
+    "desc": "配色方案生成器，调主题色的时候会开。",
+    "icon": "palette"
+  },
+  {
+    "category": "顺手的小工具",
+    "name": "Material Symbols",
+    "url": "https://fonts.google.com/icons",
+    "desc": "全站图标都来自这里，按名字直接搜。",
+    "icon": "emoji_symbols"
+  },
+  {
+    "category": "看看别人怎么写",
+    "name": "阮一峰的网络日志",
+    "url": "https://www.ruanyifeng.com/blog/",
+    "desc": "技术随笔和每周分享，更新很稳。",
+    "icon": "rss_feed"
+  },
+  {
+    "category": "看看别人怎么写",
+    "name": "CSS-Tricks",
+    "url": "https://css-tricks.com/",
+    "desc": "讲 CSS 的文章，很多小技巧是从这儿学的。",
+    "icon": "css"
+  }
+]

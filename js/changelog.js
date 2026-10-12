@@ -4,7 +4,7 @@ async function loadChangelog() {
   if (!timeline) return;
 
   try {
-    const res = await fetch('data/changelog.json');
+    const res = await fetch(SITE_ROOT + 'data/changelog.json');
     if (!res.ok) throw new Error('changelog.json 加载失败');
     const data = await res.json();
 

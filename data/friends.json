@@ -1,0 +1,14 @@
+[
+  {
+    "name": "示例站点",
+    "url": "https://example.com",
+    "avatar": "images/avatar.jpg",
+    "desc": "这是一条示例友链。把 data/friends.json 换成真实数据就会显示成你朋友的站点。"
+  },
+  {
+    "name": "另一个示例",
+    "url": "https://example.org",
+    "avatar": "images/avatar.jpg",
+    "desc": "同样是一条占位数据，用来演示卡片的排版效果。"
+  }
+]

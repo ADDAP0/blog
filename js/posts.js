@@ -1,11 +1,12 @@
 /* ===================================================
    文章列表页
-   四种视图（用 URL 的 ?view= 切换）：
-     all      全部文章，按时间倒序
-     category 分类，胶囊筛选
-     tag      标签，胶囊筛选
-     archive  归档，按年月分组
-   筛选状态也写进 URL，可分享、可前进后退。
+   几种状态，全部用 URL 参数切换：
+     （无）           全部文章，按时间倒序
+     view=category    分类，胶囊筛选
+     view=tag         标签，胶囊筛选
+     view=archive     归档，按年月分组
+     q=关键词         搜索结果（首页搜索框回车后跳到这里）
+   筛选状态都写进 URL，可分享、可前进后退。
    =================================================== */
 (function () {
   'use strict';
@@ -18,7 +19,8 @@
   const subEl    = document.getElementById('pageSub');
 
   let posts = [];
-  const state = { view: 'all', category: null, tag: null };
+  let searchIndex = null;          // 搜索时按需加载
+  const state = { view: 'all', category: null, tag: null, q: '' };
 
   /* ---------- 小工具 ---------- */
   function esc(s) {
@@ -29,10 +31,23 @@
       .replace(/"/g, '&quot;');
   }
 
+  /* 有搜索词时把命中处高亮；highlight 自己会转义 */
+  function hl(text, query) {
+    if (query && window.SearchCore && window.SearchCore.highlight) {
+      return window.SearchCore.highlight(text, query);
+    }
+    return esc(text);
+  }
+
+  function listState(icon, text) {
+    return '<div class="list-state">' +
+      '<span class="material-symbols-rounded">' + icon + '</span>' + text + '</div>';
+  }
+
   const catOf = p => p.category || '未分类';
 
   function postUrl(slug) {
-    return 'post.html?slug=' + encodeURIComponent(slug);
+    return SITE_ROOT + 'pages/post.html?slug=' + encodeURIComponent(slug);
   }
 
   /* ---------- URL <-> state ---------- */
@@ -42,6 +57,7 @@
     state.view = VIEWS.indexOf(v) !== -1 ? v : 'all';
     state.category = p.get('category');
     state.tag = p.get('tag');
+    state.q = (p.get('q') || '').trim();
   }
 
   function currentUrl() {
@@ -49,8 +65,9 @@
     if (state.view !== 'all') p.set('view', state.view);
     if (state.view === 'category' && state.category) p.set('category', state.category);
     if (state.view === 'tag' && state.tag) p.set('tag', state.tag);
-    const q = p.toString();
-    return location.pathname + (q ? '?' + q : '');
+    if (state.q) p.set('q', state.q);
+    const qs = p.toString();
+    return location.pathname + (qs ? '?' + qs : '');
   }
 
   function pushUrl() {
@@ -65,7 +82,7 @@
     const p = new URLSearchParams();
     p.set('view', view);
     if (value) p.set(view === 'category' ? 'category' : 'tag', value);
-    return 'posts.html?' + p.toString();
+    return SITE_ROOT + 'pages/posts.html?' + p.toString();
   }
 
   /* ---------- 状态切换 ---------- */
@@ -73,6 +90,7 @@
     state.view = view;
     state.category = null;
     state.tag = null;
+    state.q = '';
     pushUrl();
     render();
   }
@@ -93,13 +111,22 @@
   function renderTabs() {
     if (!tabsEl) return;
     Array.prototype.forEach.call(tabsEl.querySelectorAll('.view-tab'), a => {
-      a.classList.toggle('active', a.dataset.view === state.view);
+      a.classList.toggle('active', !state.q && a.dataset.view === state.view);
     });
   }
 
-  /* ---------- 分类 / 标签筛选胶囊 ---------- */
+  /* ---------- 筛选胶囊 ---------- */
   function renderFilter() {
     if (!filterEl) return;
+
+    /* 搜索模式下只给一个“清除搜索”的出口 */
+    if (state.q) {
+      filterEl.innerHTML =
+        '<a class="filter-chip active" href="' + SITE_ROOT + 'pages/posts.html?view=all" title="清除搜索，回到全部文章">' +
+          '搜索「' + esc(state.q) + '」 ✕' +
+        '</a>';
+      return;
+    }
 
     const isCat = state.view === 'category';
     const isTag = state.view === 'tag';
@@ -135,7 +162,7 @@
   }
 
   /* ---------- 卡片 ---------- */
-  function cardHtml(p) {
+  function cardHtml(p, query) {
     const tags = (p.tags || []).map(t =>
       '<span class="tag-pill"><span class="material-symbols-rounded">sell</span>' + esc(t) + '</span>'
     ).join('');
@@ -147,8 +174,8 @@
           '<span class="post-item-cat"><span class="material-symbols-rounded">category</span>' +
             esc(catOf(p)) + '</span>' +
         '</div>' +
-        '<h2 class="post-item-title">' + esc(p.title) + '</h2>' +
-        '<p class="post-item-summary">' + esc(p.summary) + '</p>' +
+        '<h2 class="post-item-title">' + hl(p.title, query) + '</h2>' +
+        '<p class="post-item-summary">' + hl(p.summary, query) + '</p>' +
         (tags ? '<div class="post-item-tags">' + tags + '</div>' : '') +
       '</a>';
   }
@@ -185,9 +212,23 @@
     }).join('');
   }
 
+  /* ---------- 搜索 ---------- */
+  function runSearch(query) {
+    if (searchIndex && window.SearchCore) {
+      return window.SearchCore.search(searchIndex, query);
+    }
+    /* 索引没拿到时退化成只搜列表里已有的字段 */
+    const q = query.toLowerCase();
+    return posts.filter(p =>
+      (p.title + ' ' + (p.summary || '') + ' ' + (p.tags || []).join(' ') + ' ' + catOf(p))
+        .toLowerCase().indexOf(q) !== -1
+    );
+  }
+
   /* ---------- 副标题 ---------- */
   function subtitle() {
     const total = posts.length;
+    if (state.q) return '搜索「' + state.q + '」· 找到 ' + runSearch(state.q).length + ' 篇';
     if (state.view === 'category') {
       return state.category ? '分类「' + state.category + '」' : '共 ' + total + ' 篇文章，按分类浏览';
     }
@@ -204,10 +245,18 @@
     renderFilter();
 
     if (!posts.length) {
-      listEl.innerHTML = '<div class="list-state">' +
-        '<span class="material-symbols-rounded">inbox</span>' +
-        '还没有文章，去 posts/ 里写一篇吧</div>';
+      listEl.innerHTML = listState('inbox', '还没有文章，去 posts/ 里写一篇吧');
       if (subEl) subEl.textContent = '还没有文章';
+      return;
+    }
+
+    /* 搜索模式 */
+    if (state.q) {
+      const list = runSearch(state.q);
+      listEl.innerHTML = list.length
+        ? list.map(p => cardHtml(p, state.q)).join('')
+        : listState('search_off', '没有找到和「' + esc(state.q) + '」有关的文章');
+      if (subEl) subEl.textContent = subtitle();
       return;
     }
 
@@ -216,18 +265,16 @@
       html = archiveHtml();
     } else if (state.view === 'category') {
       const list = state.category ? posts.filter(p => catOf(p) === state.category) : posts;
-      html = list.map(cardHtml).join('');
+      html = list.map(p => cardHtml(p)).join('');
     } else if (state.view === 'tag') {
       const list = state.tag ? posts.filter(p => (p.tags || []).indexOf(state.tag) !== -1) : posts;
-      html = list.map(cardHtml).join('');
+      html = list.map(p => cardHtml(p)).join('');
     } else {
-      html = posts.map(cardHtml).join('');
+      html = posts.map(p => cardHtml(p)).join('');
     }
 
     if (!html) {
-      html = '<div class="list-state">' +
-        '<span class="material-symbols-rounded">search_off</span>' +
-        '这里还没有文章</div>';
+      html = listState('search_off', '这里还没有文章');
     }
 
     listEl.innerHTML = html;
@@ -251,7 +298,13 @@
         if (!a) return;
         e.preventDefault();
 
-        // 从 href 里取回筛选值，避免把中文塞进 data 属性
+        /* 搜索模式下的那个胶囊是“清除搜索” */
+        if (state.q) {
+          selectView('all');
+          return;
+        }
+
+        /* 从 href 里取回筛选值，避免把中文塞进 data 属性 */
         const value = new URLSearchParams(a.getAttribute('href').split('?')[1]).get(
           state.view === 'category' ? 'category' : 'tag'
         );
@@ -264,20 +317,33 @@
     window.addEventListener('popstate', () => {
       readUrl();
       render();
+      if (state.q && !searchIndex) loadSearchIndex();
     });
+  }
+
+  /* ---------- 按需加载搜索索引 ---------- */
+  async function loadSearchIndex() {
+    try {
+      const res = await fetch(SITE_ROOT + 'data/search-index.json');
+      if (res.ok) {
+        const data = await res.json();
+        searchIndex = Array.isArray(data) ? data : null;
+      }
+    } catch (e) {
+      searchIndex = null;   // 退化到字段搜索
+    }
+    return searchIndex;
   }
 
   /* ---------- 启动 ---------- */
   async function init() {
     try {
-      const res = await fetch('data/posts.json');
+      const res = await fetch(SITE_ROOT + 'data/posts.json');
       if (!res.ok) throw new Error('HTTP ' + res.status);
       posts = await res.json();
     } catch (e) {
       console.error('[posts] 文章列表加载失败', e);
-      listEl.innerHTML = '<div class="list-state">' +
-        '<span class="material-symbols-rounded">error</span>' +
-        '加载失败，请确认 data/posts.json 存在</div>';
+      listEl.innerHTML = listState('error', '加载失败，请确认 data/posts.json 存在');
       if (subEl) subEl.textContent = '加载失败';
       return;
     }
@@ -285,6 +351,9 @@
     if (!Array.isArray(posts)) posts = [];
 
     readUrl();
+
+    if (state.q) await loadSearchIndex();
+
     render();
     bind();
   }

@@ -1,0 +1,120 @@
+/* ========== 关于我 ========== */
+.about-hero {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+
+  padding: 26px 28px;
+  margin-bottom: 18px;
+  border-radius: 20px;
+
+  background-color: var(--surface);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--border);
+  box-shadow:
+    var(--shadow-card),
+    inset 0 1px 0 var(--inner-highlight);
+
+  animation: fadeUp 0.6s ease both;
+}
+
+.about-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 3px solid var(--inner-highlight-strong);
+  box-shadow: 0 8px 22px rgba(99, 102, 241, 0.28);
+  background: var(--surface-solid);
+}
+
+.about-hero-text { min-width: 0; }
+
+.about-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-strong);
+  margin-bottom: 6px;
+}
+
+.about-bio {
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: var(--text-soft);
+  margin-bottom: 14px;
+}
+
+.about-social {
+  display: flex;
+  gap: 8px;
+}
+
+.about-social a {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--surface-soft);
+  border: 1px solid var(--border-soft);
+  color: var(--text-icon);
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.about-social a:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+.about-social .material-symbols-rounded { font-size: 1.05rem; }
+
+/* 技能标签 */
+.about-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.about-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-icon);
+  background: var(--surface-soft);
+  border: 1px solid var(--border-soft);
+  transition: all 0.22s ease;
+}
+
+.about-tag:hover {
+  color: var(--accent);
+  border-color: rgba(99, 102, 241, 0.45);
+  transform: translateY(-1px);
+}
+
+.about-tag .material-symbols-rounded {
+  font-size: 0.9rem;
+  color: var(--accent);
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 720px) {
+  .about-hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 22px;
+  }
+  .about-social { justify-content: center; }
+  .about-name { font-size: 1.35rem; }
+}

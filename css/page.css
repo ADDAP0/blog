@@ -1,0 +1,144 @@
+/* ========== 内页通用：容器 + 页头 + 信息块 ========== */
+.page {
+  position: relative;
+  z-index: 10;
+  max-width: 860px;
+  width: calc(100% - 120px);
+  margin: 0 auto;
+  padding: 20px 0 40px;
+  animation: fadeUp 0.7s ease both;
+}
+
+.page-header {
+  text-align: center;
+  padding: 32px 0 30px;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #a855f7, #6366f1, #3b82f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.page-sub {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- 信息块 ---------- */
+.info-block {
+  background-color: var(--surface);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--border);
+  box-shadow:
+    var(--shadow-soft),
+    inset 0 1px 0 var(--inner-highlight);
+  border-radius: 18px;
+  padding: 24px 28px;
+  margin-bottom: 18px;
+  color: var(--text);
+  animation: fadeUp 0.6s ease both;
+}
+
+.info-block h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-strong);
+  margin-bottom: 12px;
+}
+
+.info-block h3 .material-symbols-rounded {
+  font-size: 1.3rem;
+  color: var(--accent);
+}
+
+.info-block p {
+  font-size: 0.9rem;
+  line-height: 1.9;
+  color: var(--text-body);
+  margin-bottom: 10px;
+}
+
+.info-block p:last-child { margin-bottom: 0; }
+
+.info-block ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.info-block li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 0.9rem;
+  line-height: 1.9;
+  color: var(--text-body);
+}
+
+.info-block li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #a5b4fc;
+}
+
+.info-block li b { color: var(--text-strong); }
+
+.info-block a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(99, 102, 241, 0.4);
+  transition: all 0.2s ease;
+}
+
+.info-block a:hover {
+  color: var(--accent-strong);
+  border-bottom-style: solid;
+}
+
+.info-block code {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 0.88em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--tint);
+  border: 1px solid var(--border-soft);
+  color: var(--accent-strong);
+}
+
+/* ---------- 状态提示 ---------- */
+.page-state {
+  text-align: center;
+  padding: 52px 20px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.page-state .material-symbols-rounded {
+  display: block;
+  font-size: 2.6rem;
+  margin-bottom: 10px;
+  opacity: 0.75;
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 720px) {
+  .page { width: calc(100% - 40px); }
+  .page-title { font-size: 1.9rem; }
+  .info-block { padding: 18px 20px; }
+}

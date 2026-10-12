@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于我 · 米饭多加水の小窝</title>
+
+
+  <!-- 站点根路径：页面收在 pages/ 下，JS 用它拼资源地址 -->
+  <script>window.SITE_ROOT = '../';</script>
+  <!-- 主题：必须同步（不加 defer）放在样式之前，第一帧就不会闪 -->
+  <script src="../js/theme.js"></script>
+
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/background.css">
+  <link rel="stylesheet" href="../css/navbar.css">
+  <link rel="stylesheet" href="../css/cards.css">
+  <link rel="stylesheet" href="../css/footer.css">
+  <link rel="stylesheet" href="../css/page.css">
+  <link rel="stylesheet" href="../css/about.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+</head>
+<body>
+
+  <div class="slideshow" id="slideshow"></div>
+  <div class="overlay"></div>
+
+  <nav class="navbar">
+    <div class="nav-brand-wrap">
+      <a href="../index.html" class="nav-brand" aria-label="米饭多加水の小窝">
+        <span class="brand-text">米饭多加水の小窝</span>
+      </a>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-li">
+        <a href="../index.html" class="nav-item">
+          <span class="material-symbols-rounded">home</span>主页
+        </a>
+      </li>
+
+      <li class="nav-li has-dropdown">
+        <a href="posts.html?view=all" class="nav-item">
+          <span class="material-symbols-rounded">description</span>文章
+          <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+        </a>
+        <div class="dropdown">
+          <a href="posts.html?view=all" class="drop-item">
+            <span class="material-symbols-rounded">article</span>
+            <div><b>全部文章</b><i>按时间倒序浏览</i></div>
+          </a>
+          <a href="posts.html?view=category" class="drop-item">
+            <span class="material-symbols-rounded">category</span>
+            <div><b>分类</b><i>按主题归类</i></div>
+          </a>
+          <a href="posts.html?view=tag" class="drop-item">
+            <span class="material-symbols-rounded">sell</span>
+            <div><b>标签</b><i>按关键词找</i></div>
+          </a>
+          <a href="posts.html?view=archive" class="drop-item">
+            <span class="material-symbols-rounded">archive</span>
+            <div><b>归档</b><i>按年月排列</i></div>
+          </a>
+        </div>
+      </li>
+
+      <li class="nav-li has-dropdown">
+        <a href="#" class="nav-item">
+          <span class="material-symbols-rounded">group</span>社交
+          <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+        </a>
+        <div class="dropdown">
+          <a href="https://github.com/ADDAP0" class="drop-item" target="_blank">
+            <span class="material-symbols-rounded">code</span>
+            <div><b>GitHub</b><i>代码仓库</i></div>
+          </a>
+          <a href="https://space.bilibili.com/3546644651968606" class="drop-item" target="_blank">
+            <span class="material-symbols-rounded">chat</span>
+            <div><b>Bilibili</b><i>视频分享</i></div>
+          </a>
+          <a href="mailto:3840447667@qq.com" class="drop-item">
+            <span class="material-symbols-rounded">mail</span>
+            <div><b>邮箱</b><i>3840447667@qq.com</i></div>
+          </a>
+        </div>
+      </li>
+
+      <li class="nav-li has-dropdown">
+        <a href="about.html" class="nav-item active">
+          <span class="material-symbols-rounded">person</span>我的
+          <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+        </a>
+        <div class="dropdown">
+          <a href="about.html" class="drop-item">
+            <span class="material-symbols-rounded">badge</span>
+            <div><b>关于我</b><i>自我介绍</i></div>
+          </a>
+          <a href="gallery.html" class="drop-item">
+            <span class="material-symbols-rounded">photo_library</span>
+            <div><b>相册</b><i>生活记录</i></div>
+          </a>
+          <a href="favorites.html" class="drop-item">
+            <span class="material-symbols-rounded">favorite</span>
+            <div><b>收藏</b><i>喜欢的东西</i></div>
+          </a>
+        </div>
+      </li>
+
+      <li class="nav-li has-dropdown">
+        <a href="#" class="nav-item">
+          <span class="material-symbols-rounded">info</span>关于
+          <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+        </a>
+        <div class="dropdown">
+          <a href="post.html?slug=2026-10-12-about-site" class="drop-item">
+            <span class="material-symbols-rounded">info</span>
+            <div><b>站点介绍</b><i>这个博客是什么</i></div>
+          </a>
+          <a href="changelog.html" class="drop-item">
+            <span class="material-symbols-rounded">update</span>
+            <div><b>更新日志</b><i>最近改了什么</i></div>
+          </a>
+          <a href="license.html" class="drop-item">
+            <span class="material-symbols-rounded">verified</span>
+            <div><b>版权声明</b><i>内容授权说明</i></div>
+          </a>
+        </div>
+      </li>
+
+      <li class="nav-li has-dropdown">
+        <a href="#" class="nav-item">
+          <span class="material-symbols-rounded">link</span>链接
+          <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+        </a>
+        <div class="dropdown">
+          <a href="friends.html" class="drop-item">
+            <span class="material-symbols-rounded">public</span>
+            <div><b>友情链接</b><i>朋友们</i></div>
+          </a>
+          <a href="cooperate.html" class="drop-item">
+            <span class="material-symbols-rounded">handshake</span>
+            <div><b>合作</b><i>联系方式</i></div>
+          </a>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <main class="page">
+
+    <header class="page-header">
+      <h1 class="page-title">关于我</h1>
+      <p class="page-sub">一个普普通通的大学生</p>
+    </header>
+
+    <section class="about-hero">
+      <img class="about-avatar" src="../images/avatar.jpg" alt="头像">
+      <div class="about-hero-text">
+        <h2 class="about-name">米饭多加水</h2>
+        <p class="about-bio">
+          在读学生，平时写点代码、听听歌，偶尔拍两张照片。<br>
+          这个博客是我放在网上的一个小角落。
+        </p>
+        <div class="about-social">
+          <a href="https://github.com/ADDAP0" target="_blank" rel="noopener" title="GitHub">
+            <span class="material-symbols-rounded">code</span>
+          </a>
+          <a href="https://space.bilibili.com/3546644651968606" target="_blank" rel="noopener" title="Bilibili">
+            <span class="material-symbols-rounded">smart_display</span>
+          </a>
+          <a href="mailto:3840447667@qq.com" title="邮箱">
+            <span class="material-symbols-rounded">mail</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="info-block">
+      <h3><span class="material-symbols-rounded">person</span>我是谁</h3>
+      <p>
+        网名「米饭多加水」，一个还在读书的普通学生。
+        专业跟代码沾点边，但真正让我坐下来敲键盘的，多半是自己想折腾的东西。
+      </p>
+      <p>
+        没什么拿得出手的成就，日常就是上课、写作业，
+        然后在深夜打开编辑器改点自己的小项目。
+      </p>
+    </section>
+
+    <section class="info-block">
+      <h3><span class="material-symbols-rounded">favorite</span>平时喜欢做什么</h3>
+      <ul>
+        <li><b>写点小东西</b>：这个博客就是其中之一，用纯 HTML / CSS / JavaScript 一行行搭起来的</li>
+        <li><b>听歌</b>：动漫和游戏相关的曲子居多，首页那个播放器放的就是最近在循环的</li>
+        <li><b>看番</b>：站里的图片素材基本都来自喜欢的作品</li>
+        <li><b>陪猫猫</b>：以及偶尔带它出门吃顿好的</li>
+      </ul>
+    </section>
+
+    <section class="info-block">
+      <h3><span class="material-symbols-rounded">code</span>在折腾什么</h3>
+      <p>正在学、正在用的东西，大概这些：</p>
+      <div class="about-tags">
+        <span class="about-tag"><span class="material-symbols-rounded">html</span>HTML</span>
+        <span class="about-tag"><span class="material-symbols-rounded">css</span>CSS</span>
+        <span class="about-tag"><span class="material-symbols-rounded">javascript</span>JavaScript</span>
+        <span class="about-tag"><span class="material-symbols-rounded">terminal</span>Node.js</span>
+        <span class="about-tag"><span class="material-symbols-rounded">commit</span>Git</span>
+        <span class="about-tag"><span class="material-symbols-rounded">cloud_upload</span>GitHub Pages</span>
+      </div>
+      <p>关于这个站本身是怎么搭的，写在<a href="post.html?slug=2026-10-12-about-site">站点介绍</a>里了。</p>
+    </section>
+
+    <section class="info-block">
+      <h3><span class="material-symbols-rounded">mail</span>联系我</h3>
+      <ul>
+        <li><b>邮箱</b>：<a href="mailto:3840447667@qq.com">3840447667@qq.com</a></li>
+        <li><b>GitHub</b>：<a href="https://github.com/ADDAP0" target="_blank" rel="noopener">@ADDAP0</a></li>
+        <li><b>Bilibili</b>：<a href="https://space.bilibili.com/3546644651968606" target="_blank" rel="noopener">空间主页</a></li>
+      </ul>
+      <p>有事直接发邮件就行，我基本每天都会看。</p>
+    </section>
+
+  </main>
+
+  <div class="footer-bar" style="max-width:860px;margin:24px auto 40px;">
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="status">
+      <span class="dot-green"></span>
+      <span>持续更新中</span>
+    </div>
+    <div class="icp" style="margin-left:auto;">萌ICP备20260240号</div>
+  </div>
+
+  <script src="../js/slideshow.js"></script>
+  <script src="../js/clock.js"></script>
+</body>
+</html>

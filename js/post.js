@@ -23,7 +23,7 @@
     if (bodyEl) {
       bodyEl.innerHTML = '<div class="post-state">' +
         '<span class="material-symbols-rounded">error</span>' + html +
-        '<br><br><a href="posts.html?view=all">← 返回文章列表</a></div>';
+        '<br><br><a href="' + SITE_ROOT + 'pages/posts.html?view=all">← 返回文章列表</a></div>';
     }
   }
 
@@ -32,7 +32,7 @@
     const cat = p.category || '未分类';
 
     const tags = (p.tags || []).map(t =>
-      '<a class="meta-tag" href="posts.html?view=tag&tag=' + encodeURIComponent(t) + '">' +
+      '<a class="meta-tag" href="' + SITE_ROOT + 'pages/posts.html?view=tag&tag=' + encodeURIComponent(t) + '">' +
         '<span class="material-symbols-rounded">sell</span>' + esc(t) +
       '</a>'
     ).join('');
@@ -44,7 +44,7 @@
           '<div class="post-meta">' +
             '<time datetime="' + esc(p.date) + '">' + esc(p.date) + '</time>' +
             '<span class="sep">·</span>' +
-            '<a class="meta-cat" href="posts.html?view=category&category=' +
+            '<a class="meta-cat" href="' + SITE_ROOT + 'pages/posts.html?view=category&category=' +
               encodeURIComponent(cat) + '">' +
               '<span class="material-symbols-rounded">category</span>' + esc(cat) +
             '</a>' +
@@ -63,7 +63,7 @@
 
     let list = [];
     try {
-      const res = await fetch('data/posts.json');
+      const res = await fetch(SITE_ROOT + 'data/posts.json');
       if (res.ok) list = await res.json();
     } catch (e) {
       return;   // 导航拿不到就算了，不影响正文
@@ -81,7 +81,7 @@
 
     if (older) {
       items.push('' +
-        '<a class="prev" href="post.html?slug=' + encodeURIComponent(older.slug) + '">' +
+        '<a class="prev" href="' + SITE_ROOT + 'pages/post.html?slug=' + encodeURIComponent(older.slug) + '">' +
           '<span class="nav-label"><span class="material-symbols-rounded">arrow_back</span>上一篇</span>' +
           '<span class="nav-title">' + esc(older.title) + '</span>' +
         '</a>');
@@ -89,7 +89,7 @@
 
     if (newer) {
       items.push('' +
-        '<a class="next" href="post.html?slug=' + encodeURIComponent(newer.slug) + '">' +
+        '<a class="next" href="' + SITE_ROOT + 'pages/post.html?slug=' + encodeURIComponent(newer.slug) + '">' +
           '<span class="nav-label">下一篇<span class="material-symbols-rounded">arrow_forward</span></span>' +
           '<span class="nav-title">' + esc(newer.title) + '</span>' +
         '</a>');
@@ -108,7 +108,7 @@
 
     let post;
     try {
-      const res = await fetch('data/content/' + encodeURIComponent(slug) + '.json');
+      const res = await fetch(SITE_ROOT + 'data/content/' + encodeURIComponent(slug) + '.json');
       if (!res.ok) throw new Error('HTTP ' + res.status);
       post = await res.json();
     } catch (e) {

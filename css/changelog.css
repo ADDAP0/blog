@@ -9,27 +9,10 @@
   animation: fadeUp 0.7s ease both;
 }
 
-/* 页头 */
-.page-header {
-  text-align: center;
-  padding: 32px 0 40px;
-}
-
-.page-title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #a855f7, #6366f1, #3b82f6);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: 1px;
-  margin-bottom: 10px;
-}
-
-.page-sub {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+/* 页头：.page-header / .page-title / .page-sub 统一在 css/page.css 里定义。
+   时间轴这块的页头比别的页稍宽松一点，在这里覆盖一下。 */
+.changelog-page .page-header {
+  padding-bottom: 40px;
 }
 
 /* ========== 时间轴 ========== */

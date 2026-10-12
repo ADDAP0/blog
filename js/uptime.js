@@ -21,6 +21,15 @@ function updateUptime() {
   $('t-hour')  && ($('t-hour').textContent  = pad(hour));
   $('t-min')   && ($('t-min').textContent   = pad(min));
   $('t-sec')   && ($('t-sec').textContent   = pad(sec));
+
+  // 首页底部状态条上的运行时长（以前是写死的）
+  const runEl = document.getElementById('runTime');
+  if (runEl) {
+    const ms = now - START_DATE;
+    const days  = Math.floor(ms / 86400000);
+    const hours = Math.floor((ms % 86400000) / 3600000);
+    runEl.textContent = '系统已稳定运行：' + days + ' 天 ' + hours + ' 小时';
+  }
 }
 
 /* ========== 进度条 ========== */

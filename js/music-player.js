@@ -5,11 +5,11 @@
 // 播放列表：加歌只填 src / lrc / title / artist / cover
 const playlist = [
   {
-    src:    'music/凡常恩典.mp3',
-    lrc:    'music/凡常恩典-塞壬唱片-MSR&动点.lrc',
+    src:    SITE_ROOT + 'music/凡常恩典.mp3',
+    lrc:    SITE_ROOT + 'music/凡常恩典-塞壬唱片-MSR&动点.lrc',
     title:  '凡常恩典',
     artist: '塞壬唱片-MSR&动点',
-    cover:  'images/cover1.jpg',
+    cover:  SITE_ROOT + 'images/cover1.jpg',
     lyrics: [],   // 运行时从 LRC 自动填
   },
 ];

@@ -232,5 +232,5 @@
     return renderBlocks(escapeHtml(String(src).replace(/\r\n?/g, '\n')));
   }
 
-  return { render: render, inline: inline, escapeHtml: escapeHtml };
+  return { render: render };
 }));

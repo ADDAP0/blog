@@ -1,7 +1,7 @@
 /* ========== 数据统计 ========== */
 async function loadStats() {
   try {
-    const res = await fetch('data/stats.json');
+    const res = await fetch(SITE_ROOT + 'data/stats.json');
     if (!res.ok) throw new Error('stats.json 加载失败');
     const stats = await res.json();
 

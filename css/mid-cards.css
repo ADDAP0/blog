@@ -5,11 +5,29 @@
   align-items: stretch;
 }
 
-/* ---- 左：最新文章卡 ---- */
+/* ---- 左：最新文章卡（可点击 + 轮播） ---- */
 .post-card {
   padding: 22px 22px 18px;
   display: flex;
   flex-direction: column;
+
+  cursor: pointer;
+  /* .card 的 fadeUp 用了 fill-mode:both，动画结束后会把 transform 冻在
+     translateY(0)，从而吃掉下面的 :hover 位移。改成 backwards 就正常了。 */
+  animation: fadeUp 0.7s ease backwards;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.post-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    var(--shadow-pop),
+    inset 0 1px 0 var(--inner-highlight);
+}
+
+.post-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .post-body { display: flex; flex-direction: column; height: 100%; }
@@ -48,27 +66,59 @@
 
 .post-dots { display: flex; gap: 6px; }
 
-.post-dots span {
+.post-dots .dot {
   width: 6px;
   height: 6px;
+  padding: 0;
+  border: none;
   border-radius: 50%;
   background: var(--dot);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
 }
 
-.post-dots span.active {
+/* 视觉上还是个小圆点，但点击热区放大到 18px */
+.post-dots .dot::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+}
+
+.post-dots .dot:hover { background: var(--accent); }
+
+.post-dots .dot.active {
   width: 18px;
   border-radius: 999px;
   background: var(--accent);
 }
 
-/* ---- 中：大图卡 ---- */
+/* ---- 中：大图卡（可点击 + 轮播） ---- */
 .feature-card {
   position: relative;
   overflow: hidden;
   min-height: 240px;
   padding: 0;
+
+  cursor: pointer;
+  animation: fadeUp 0.7s ease backwards;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
+.feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    var(--shadow-pop),
+    inset 0 1px 0 var(--inner-highlight);
+}
+
+.feature-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* 两层图片叠在一起，靠 opacity 做交叉淡入 */
 .feature-img {
   width: 100%;
   height: 100%;
@@ -76,7 +126,11 @@
   display: block;
   position: absolute;
   inset: 0;
+  opacity: 0;
+  transition: opacity 0.8s ease;
 }
+
+.feature-img.show { opacity: 1; }
 
 .feature-overlay {
   position: relative;
@@ -103,23 +157,65 @@
 
 .feature-sub {
   font-size: 0.8rem;
+  line-height: 1.5;
   color: rgba(255, 255, 255, 0.85);
   margin-bottom: 14px;
+
+  /* 相册里的描述可能偏长，最多显示两行 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .feature-dots { display: flex; gap: 6px; }
 
-.feature-dots span {
+.feature-dots .dot {
   width: 6px;
   height: 6px;
+  padding: 0;
+  border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
 }
 
-.feature-dots span.active {
+.feature-dots .dot::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+}
+
+.feature-dots .dot:hover { background: rgba(255, 255, 255, 0.75); }
+
+.feature-dots .dot.active {
   width: 18px;
   border-radius: 999px;
   background: #fff;
+}
+
+/* ---- 切换内容时的一点淡入 ---- */
+.post-title.swap,
+.post-date.swap,
+.feature-title.swap,
+.feature-sub.swap {
+  animation: cardSwap 0.45s ease both;
+}
+
+@keyframes cardSwap {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post-title.swap,
+  .post-date.swap,
+  .feature-title.swap,
+  .feature-sub.swap { animation: none; }
+  .feature-img { transition: none; }
 }
 
 /* ---- 右：日间 / 夜间模式切换卡 ---- */

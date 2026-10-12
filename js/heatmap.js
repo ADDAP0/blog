@@ -6,7 +6,7 @@ async function loadHeatmap() {
   // 拿原始数据（按天）
   let dailyData = {};
   try {
-    const res = await fetch('data/heatmap.json');
+    const res = await fetch(SITE_ROOT + 'data/heatmap.json');
     if (res.ok) dailyData = await res.json();
   } catch (e) {
     console.warn('[heatmap] 数据加载失败', e);

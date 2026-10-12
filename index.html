@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>米饭多加水の小窝</title>
 
+
+  <!-- 站点根路径：页面收在 pages/ 下，JS 用它拼资源地址 -->
+  <script>window.SITE_ROOT = '';</script>
   <!-- 主题：必须同步（不加 defer）放在样式之前，第一帧就不会闪 -->
   <script src="js/theme.js"></script>
 
@@ -43,33 +46,33 @@
   </li>
 
   <li class="nav-li has-dropdown">
-    <a href="posts.html?view=all" class="nav-item">
+    <a href="pages/posts.html?view=all" class="nav-item">
       <span class="material-symbols-rounded">description</span>文章
       <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
     </a>
     <div class="dropdown">
-      <a href="posts.html?view=all" class="drop-item">
+      <a href="pages/posts.html?view=all" class="drop-item">
         <span class="material-symbols-rounded">article</span>
         <div>
           <b>全部文章</b>
           <i>按时间倒序浏览</i>
         </div>
       </a>
-      <a href="posts.html?view=category" class="drop-item">
+      <a href="pages/posts.html?view=category" class="drop-item">
         <span class="material-symbols-rounded">category</span>
         <div>
           <b>分类</b>
           <i>按主题归类</i>
         </div>
       </a>
-      <a href="posts.html?view=tag" class="drop-item">
+      <a href="pages/posts.html?view=tag" class="drop-item">
         <span class="material-symbols-rounded">sell</span>
         <div>
           <b>标签</b>
           <i>按关键词找</i>
         </div>
       </a>
-      <a href="posts.html?view=archive" class="drop-item">
+      <a href="pages/posts.html?view=archive" class="drop-item">
         <span class="material-symbols-rounded">archive</span>
         <div>
           <b>归档</b>
@@ -101,20 +104,20 @@
   </li>
 
   <li class="nav-li has-dropdown">
-    <a href="#" class="nav-item">
+    <a href="pages/about.html" class="nav-item">
       <span class="material-symbols-rounded">person</span>我的
       <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
     </a>
     <div class="dropdown">
-      <a href="#" class="drop-item">
+      <a href="pages/about.html" class="drop-item">
         <span class="material-symbols-rounded">badge</span>
         <div><b>关于我</b><i>自我介绍</i></div>
       </a>
-      <a href="#" class="drop-item">
+      <a href="pages/gallery.html" class="drop-item">
         <span class="material-symbols-rounded">photo_library</span>
         <div><b>相册</b><i>生活记录</i></div>
       </a>
-      <a href="#" class="drop-item">
+      <a href="pages/favorites.html" class="drop-item">
         <span class="material-symbols-rounded">favorite</span>
         <div><b>收藏</b><i>喜欢的东西</i></div>
       </a>
@@ -127,15 +130,15 @@
       <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
     </a>
     <div class="dropdown">
-      <a href="post.html?slug=2026-10-12-about-site" class="drop-item">
+      <a href="pages/post.html?slug=2026-10-12-about-site" class="drop-item">
         <span class="material-symbols-rounded">info</span>
         <div><b>站点介绍</b><i>这个博客是什么</i></div>
       </a>
-      <a href="changelog.html" class="drop-item">
+      <a href="pages/changelog.html" class="drop-item">
         <span class="material-symbols-rounded">update</span>
         <div><b>更新日志</b><i>最近改了什么</i></div>
       </a>
-      <a href="license.html" class="drop-item">
+      <a href="pages/license.html" class="drop-item">
         <span class="material-symbols-rounded">verified</span>
         <div><b>版权声明</b><i>内容授权说明</i></div>
       </a>
@@ -143,16 +146,16 @@
   </li>
 
   <li class="nav-li has-dropdown">
-    <a href="#" class="nav-item">
+    <a href="pages/friends.html" class="nav-item">
       <span class="material-symbols-rounded">link</span>链接
       <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
     </a>
     <div class="dropdown">
-      <a href="#" class="drop-item">
+      <a href="pages/friends.html" class="drop-item">
         <span class="material-symbols-rounded">public</span>
         <div><b>友情链接</b><i>朋友们</i></div>
       </a>
-      <a href="#" class="drop-item">
+      <a href="pages/cooperate.html" class="drop-item">
         <span class="material-symbols-rounded">handshake</span>
         <div><b>合作</b><i>联系方式</i></div>
       </a>
@@ -164,14 +167,19 @@
 <main class="hero">
 
      <!-- 搜索条 -->
-  <div class="search-bar" id="searchBar">
-  <span class="material-symbols-rounded search-icon">search</span>
-  <input type="text" id="searchInput" placeholder="搜索文章、标签、想法...">
-  <button class="search-clear" id="searchClear" title="清除" aria-label="清除">
-    <span class="material-symbols-rounded">close</span>
-  </button>
-  <kbd>⌘K</kbd>
-</div>
+  <div class="search-wrap">
+    <div class="search-bar" id="searchBar">
+      <span class="material-symbols-rounded search-icon">search</span>
+      <input type="text" id="searchInput" placeholder="搜索文章、标签、正文..."
+             autocomplete="off" role="combobox" aria-expanded="false" aria-controls="searchPanel">
+      <button class="search-clear" id="searchClear" title="清除" aria-label="清除">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+      <kbd>⌘K</kbd>
+    </div>
+    <!-- 搜索结果，由 js/search.js 填充 -->
+    <div class="search-panel" id="searchPanel" role="listbox" hidden></div>
+  </div>
 
   <!-- ========== 第一行：博主 + 音乐 ========== -->
   <div class="row row-top">
@@ -258,30 +266,30 @@
   <!-- ========== 中部三卡 ========== -->
   <div class="row row-mid">
 
-    <section class="card post-card">
-  <div class="post-body">
-    <span class="post-tag">
-      <span class="material-symbols-rounded">bookmark</span> LATEST INSIGHT
-    </span>
-    <span class="post-date" id="latestDate">----.--.-- --:--</span>
+    <!-- 左：最新文章轮播 -->
+    <section class="card post-card" id="postCard" role="link" tabindex="0"
+             aria-label="打开文章">
+      <div class="post-body">
+        <span class="post-tag">
+          <span class="material-symbols-rounded">bookmark</span> LATEST INSIGHT
+        </span>
+        <span class="post-date" id="latestDate">----.--.--</span>
 
-    <h3 class="post-title" id="latestTitle">加载中…</h3>
+        <h3 class="post-title" id="latestTitle">加载中…</h3>
 
-    <div class="post-dots">
-      <span class="active"></span><span></span><span></span><span></span>
-    </div>
-  </div>
-</section>
+        <div class="post-dots" id="postDots"></div>
+      </div>
+    </section>
 
-    <!-- 中：大图卡 -->
-    <section class="card feature-card">
-      <img src="images/feature.jpg" alt="feature" class="feature-img">
+    <!-- 中：图片轮播（图片来自 data/gallery.json） -->
+    <section class="card feature-card" id="featureCard" role="link" tabindex="0"
+             aria-label="打开相册">
+      <img class="feature-img show" id="featureImgA" src="images/1.jpg" alt="" loading="lazy">
+      <img class="feature-img" id="featureImgB" src="" alt="" loading="lazy">
       <div class="feature-overlay">
-        <h3 class="feature-title">板栗猫猫</h3>
-        <p class="feature-sub">这周末带猫猫去吃吃</p>
-        <div class="feature-dots">
-          <span class="active"></span><span></span><span></span><span></span><span></span><span></span>
-        </div>
+        <h3 class="feature-title" id="featureTitle">加载中…</h3>
+        <p class="feature-sub" id="featureSub"></p>
+        <div class="feature-dots" id="featureDots"></div>
       </div>
     </section>
 
@@ -303,7 +311,7 @@
 
     <div class="status">
       <span class="dot-green"></span>
-      <span>系统已稳定运行：35天 15小时</span>
+      <span id="runTime">系统已稳定运行：--</span>
     </div>
 
     <div class="tags">
@@ -401,10 +409,11 @@
   <script src="js/heatmap.js"></script>
   <script src="js/uptime.js"></script>
   <script src="js/clock.js"></script>
+  <script src="js/search-core.js"></script>
   <script src="js/search.js"></script>
   <script src="js/profile-card.js"></script>
   <script src="js/stats.js"></script>
   <script src="js/music-player.js"></script>
-  <script src="js/latest-post.js"></script>
+  <script src="js/home-cards.js"></script>
 </body>
 </html>
