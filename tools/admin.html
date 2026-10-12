@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>写作后台 · 米饭多加水の小窝</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">米饭多加水の小窝 · <span>写作后台</span></div>
+    <div class="spacer"></div>
+    <div class="path">只在本机运行 · 127.0.0.1</div>
+  </header>
+
+  <div class="layout">
+
+    <nav class="side">
+      <button data-tab="write" class="active"><span class="ico">✍️</span>写文章</button>
+      <button data-tab="list"><span class="ico">📄</span>文章列表<span class="badge" id="badgePosts">0</span></button>
+      <button data-tab="album"><span class="ico">🖼️</span>相册<span class="badge" id="badgeAlbum">0</span></button>
+      <button data-tab="images"><span class="ico">📁</span>图片库<span class="badge" id="badgeImages">0</span></button>
+      <button data-tab="publish"><span class="ico">🚀</span>发布</button>
+    </nav>
+
+    <main class="main">
+
+      <!-- ========== 写文章 ========== -->
+      <section class="tab active" id="tab-write">
+        <h2 class="page-title" id="writeTitle">写文章</h2>
+        <p class="page-hint">
+          填好标题和正文，点「保存并更新数据」就会生成 <code>posts/*.md</code> 并自动重建站点数据。
+        </p>
+
+        <div class="card">
+          <div class="row">
+            <label class="field"><span>标题</span>
+              <input type="text" id="f-title" placeholder="文章标题">
+            </label>
+            <label class="field" style="max-width:180px"><span>日期</span>
+              <input type="date" id="f-date">
+            </label>
+          </div>
+
+          <div class="row">
+            <label class="field"><span>分类</span>
+              <input type="text" id="f-category" list="catList" placeholder="技术 / 生活 / 建站">
+            </label>
+            <label class="field"><span>标签 <i class="hint-inline">逗号分隔</i></span>
+              <input type="text" id="f-tags" placeholder="随笔, 笔记">
+            </label>
+            <label class="field"><span>网址别名 <i class="hint-inline">留空自动生成</i></span>
+              <input type="text" id="f-slug" placeholder="about-site">
+            </label>
+          </div>
+          <datalist id="catList"></datalist>
+
+          <label class="field"><span>摘要 <i class="hint-inline">留空就取正文开头</i></span>
+            <input type="text" id="f-summary" placeholder="一句话概括这篇写了什么">
+          </label>
+
+          <label class="field" style="display:flex;align-items:center;gap:8px;margin-bottom:0">
+            <input type="checkbox" id="f-draft" style="width:auto">
+            <span style="margin:0;color:var(--text);font-size:13px">存为草稿（不会出现在站点上）</span>
+          </label>
+        </div>
+
+        <div class="editor">
+          <div class="pane">
+            <div class="pane-head">
+              <span>正文（Markdown）</span>
+              <span class="hint-inline" id="bodyCount">0 字</span>
+            </div>
+            <textarea id="f-body" placeholder="在这里写正文，支持标题、粗体、列表、代码块、引用、链接、图片…"></textarea>
+          </div>
+          <div class="pane">
+            <div class="pane-head"><span>预览</span></div>
+            <div class="preview" id="preview"></div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="btnSave">💾 保存并更新数据</button>
+          <button class="btn" id="btnPickImage">🖼️ 上传并插入图片</button>
+          <button class="btn" id="btnNew">📄 清空新建</button>
+          <span class="msg" id="writeMsg"></span>
+        </div>
+        <input type="file" id="filePick" accept="image/*" multiple hidden>
+      </section>
+
+      <!-- ========== 文章列表 ========== -->
+      <section class="tab" id="tab-list">
+        <h2 class="page-title">文章列表</h2>
+        <p class="page-hint">
+          点「编辑」会把内容载入写文章页；删除会直接删掉 <code>posts/</code> 里的 .md 文件并重建数据。
+        </p>
+        <div class="list" id="postList">
+          <div class="empty">加载中…</div>
+        </div>
+      </section>
+
+      <!-- ========== 相册 ========== -->
+      <section class="tab" id="tab-album">
+        <h2 class="page-title">相册</h2>
+        <p class="page-hint">
+          相册决定首页大图卡轮播哪几张，也决定博主卡上的「照片」计数。
+        </p>
+
+        <div class="drop" id="albumDrop">
+          <b>把图片拖到这里，或点击选择</b>
+          上传后会直接加到下面的相册列表，填好标题和描述再保存
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div id="albumList"><div class="empty">加载中…</div></div>
+          <div class="actions" style="margin-top:16px">
+            <button class="btn primary" id="btnAlbumSave">💾 保存相册</button>
+            <button class="btn" id="btnAlbumReload">↻ 重新载入</button>
+            <span class="msg" id="albumMsg"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== 图片库 ========== -->
+      <section class="tab" id="tab-images">
+        <h2 class="page-title">图片库</h2>
+        <p class="page-hint">
+          这里对应 <code>images/</code> 目录。上传的图片不会自动进相册，需要的话去相册页添加。
+        </p>
+
+        <div class="drop" id="imgDrop">
+          <b>拖拽图片到这里上传</b>
+          也可以点击选择，支持一次多张；重名会自动加序号，不会覆盖已有文件
+        </div>
+
+        <div class="grid" id="imageGrid" style="margin-top:16px">
+          <div class="empty">加载中…</div>
+        </div>
+      </section>
+
+      <!-- ========== 发布 ========== -->
+      <section class="tab" id="tab-publish">
+        <h2 class="page-title">发布</h2>
+        <p class="page-hint">
+          提交并推送到 GitHub。推送后 Actions 会自动更新线上数据，等一两分钟就能在站点上看到。
+        </p>
+
+        <div class="card">
+          <label class="field"><span>提交说明</span>
+            <input type="text" id="commitMsg" placeholder="post: 新增一篇文章">
+          </label>
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:8px" id="gitInfo">读取中…</div>
+          <div class="change-list" id="changeList"></div>
+          <div class="actions" style="margin-top:16px">
+            <button class="btn primary" id="btnPublish">🚀 提交并推送</button>
+            <button class="btn" id="btnStatus">↻ 刷新状态</button>
+            <button class="btn" id="btnBuild">🔨 只重建数据</button>
+            <span class="msg" id="publishMsg"></span>
+          </div>
+          <div class="output" id="publishOut"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- 复用站点自己的 Markdown 渲染器，保证预览和线上效果一致 -->
+  <script src="markdown.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
