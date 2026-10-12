@@ -1,14 +1,14 @@
 /* ========== 通用卡片基础样式 ========== */
 .card {
-  background-color: rgba(255, 255, 255, 0.72);
+  background-color: var(--surface);
   backdrop-filter: blur(22px) saturate(180%);
   -webkit-backdrop-filter: blur(22px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--border);
   box-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    var(--shadow-card),
+    inset 0 1px 0 var(--inner-highlight);
   border-radius: 20px;
-  color: #1f2937;
+  color: var(--text);
   animation: fadeUp 0.7s ease both;
 }
 

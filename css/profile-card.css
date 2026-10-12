@@ -13,15 +13,15 @@
   grid-template-columns: 1.4fr 1fr;
   gap: 22px;
 
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: var(--surface-strong);
   backdrop-filter: blur(22px) saturate(180%);
   -webkit-backdrop-filter: blur(22px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--border);
   box-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    var(--shadow-pop),
+    inset 0 1px 0 var(--inner-highlight);
 
-  color: #1f2937;
+  color: var(--text);
 
   opacity: 0;
   visibility: hidden;
@@ -63,11 +63,11 @@
   left: 28px;
   width: 14px;
   height: 14px;
-  background: rgba(255, 255, 255, 0.75);
+  background: var(--surface-strong);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
-  border-left: 1px solid rgba(255, 255, 255, 0.35);
-  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
   transform: rotate(45deg);
   border-radius: 2px;
 }
@@ -85,9 +85,9 @@
   height: 56px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.6);
+  border: 2px solid var(--border);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-  background: #cbd5e1;
+  background: var(--surface-solid);
   flex-shrink: 0;
 }
 
@@ -101,13 +101,13 @@
 .profile-name {
   font-size: 1.15rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-strong);
   margin-bottom: 2px;
 }
 
 .profile-bio {
   font-size: 0.82rem;
-  color: rgba(31, 41, 55, 0.7);
+  color: var(--text-soft);
 }
 
 /* 社交按钮 */
@@ -126,10 +126,10 @@
   align-items: center;
   justify-content: center;
 
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
 
-  color: #4b5563;
+  color: var(--text-icon);
   text-decoration: none;
   transition: all 0.25s ease;
 }
@@ -150,9 +150,9 @@
 .heatmap-months {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 4px;                     /* ← 有 gap 吗？ */
+  gap: 4px;
   font-size: 0.7rem;
-  color: rgba(31, 41, 55, 0.55);
+  color: var(--text-muted);
   text-align: center;
   margin-bottom: 6px;
   padding: 0 2px;
@@ -167,7 +167,7 @@
 }
 
 .heatmap {
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--surface-soft);
   border-radius: 12px;
   padding: 12px 10px;
   margin-top: 4px;
@@ -175,8 +175,8 @@
 
 .heat-cell {
   border-radius: 4px;
-  background: rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: var(--heat-cell);
+  border: 1px solid var(--heat-cell-border);
   transition: all 0.25s ease;
 }
 
@@ -192,12 +192,12 @@
 
 .heat-cell.empty {
   background: transparent;
-  border: 1px dashed rgba(0, 0, 0, 0.05);
+  border: 1px dashed var(--heat-cell-border);
 }
 
 /* ========== 右栏 ========== */
 .profile-right {
-  border-left: 1px solid rgba(255, 255, 255, 0.4);
+  border-left: 1px solid var(--divider);
   padding-left: 22px;
   display: flex;
   flex-direction: column;
@@ -210,13 +210,13 @@
   align-items: baseline;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-strong);
 }
 
 .uptime-since {
   font-size: 0.72rem;
   font-weight: 400;
-  color: rgba(31, 41, 55, 0.6);
+  color: var(--text-soft);
 }
 
 .uptime-grid {
@@ -230,7 +230,7 @@
   display: block;
   font-size: 1.35rem;
   font-weight: 800;
-  color: #6366f1;
+  color: var(--accent);
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
@@ -239,7 +239,7 @@
   display: block;
   font-style: normal;
   font-size: 0.68rem;
-  color: rgba(31, 41, 55, 0.55);
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
@@ -251,7 +251,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.78rem;
-  color: #111827;
+  color: var(--text-strong);
   margin-bottom: 5px;
 }
 
@@ -262,7 +262,7 @@
 .progress-bar {
   height: 7px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--surface-hover);
   overflow: hidden;
 }
 
@@ -283,7 +283,7 @@
   }
   .profile-right {
     border-left: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.4);
+    border-top: 1px solid var(--divider);
     padding-left: 0;
     padding-top: 16px;
   }

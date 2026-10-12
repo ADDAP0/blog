@@ -33,7 +33,7 @@
 
 .post-date {
   font-size: 0.7rem;
-  color: rgba(31, 41, 55, 0.5);
+  color: var(--text-faint);
   margin-bottom: 14px;
 }
 
@@ -41,7 +41,7 @@
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1.45;
-  color: #111827;
+  color: var(--text-strong);
   margin-top: auto;
   margin-bottom: 16px;
 }
@@ -52,13 +52,13 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--dot);
 }
 
 .post-dots span.active {
   width: 18px;
   border-radius: 999px;
-  background: #6366f1;
+  background: var(--accent);
 }
 
 /* ---- 中：大图卡 ---- */
@@ -122,7 +122,7 @@
   background: #fff;
 }
 
-/* ---- 右：日间模式卡 ---- */
+/* ---- 右：日间 / 夜间模式切换卡 ---- */
 .mode-card {
   padding: 26px 22px;
   display: flex;
@@ -131,6 +131,35 @@
   justify-content: center;
   text-align: center;
   gap: 14px;
+
+  /* 这张卡是可点击的主题开关 */
+  font: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+
+  /* 关键：.card 的 fadeUp 用了 fill-mode:both，动画结束后会把 transform
+     冻结在 translateY(0)，从而吃掉下面的 :hover 位移。
+     改成 backwards —— 入场照样播，结束后不再霸占 transform。 */
+  animation: fadeUp 0.7s ease backwards;
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.mode-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    var(--shadow-pop),
+    inset 0 1px 0 var(--inner-highlight);
+}
+
+.mode-card:active {
+  transform: translateY(-1px) scale(0.985);
+}
+
+.mode-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .mode-icon {
@@ -146,7 +175,7 @@
     #fbbf24, #f472b6, #a855f7, #6366f1, #22d3ee, #34d399, #fbbf24
   );
   box-shadow:
-    0 0 0 6px rgba(255, 255, 255, 0.6),
+    0 0 0 6px var(--mode-icon-ring),
     0 8px 24px rgba(168, 85, 247, 0.35);
   position: relative;
 }
@@ -156,7 +185,7 @@
   position: absolute;
   inset: 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--mode-icon-inner);
 }
 
 .mode-icon .material-symbols-rounded {
@@ -172,11 +201,11 @@
 .mode-title {
   font-size: 1.1rem;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-strong);
 }
 
 .mode-desc {
   font-size: 0.78rem;
-  color: rgba(31, 41, 55, 0.55);
+  color: var(--text-muted);
   letter-spacing: 1px;
 }

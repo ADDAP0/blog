@@ -1,8 +1,9 @@
 /* ===================================================
    扫描 posts/*.md
-   生成 data/heatmap.json（热力图数据）
-   生成 data/posts.json  （文章列表，用于首页）
-   更新 data/stats.json  （文章统计）
+   生成 data/heatmap.json        （热力图数据）
+   生成 data/posts.json          （文章列表：首页 / 列表页用，不含正文）
+   生成 data/content/<slug>.json （每篇的元信息 + 正文，详情页按需加载）
+   更新 data/stats.json          （文章统计）
    =================================================== */
 
 const fs = require('fs');
@@ -12,6 +13,10 @@ const POSTS_DIR     = './posts';
 const HEATMAP_FILE  = './data/heatmap.json';
 const POSTS_FILE    = './data/posts.json';
 const STATS_FILE    = './data/stats.json';
+const CONTENT_DIR   = './data/content';
+
+// 没写 category 的文章归到这里
+const DEFAULT_CATEGORY = '未分类';
 
 /* ---------- 扫描所有文章 ---------- */
 function scanPosts() {
@@ -45,8 +50,9 @@ function scanPosts() {
     // 抓字段
     const title = (fm.match(/title:\s*(.+)/) || [])[1]?.trim().replace(/^["']|["']$/g, '');
     const date  = (fm.match(/date:\s*(\d{4}-\d{2}-\d{2})/) || [])[1];
-    const tags  = (fm.match(/tags:\s*\[(.+?)\]/) || [])[1]?.split(',').map(t => t.trim()) || [];
+    const tags  = (fm.match(/tags:\s*\[(.+?)\]/) || [])[1]?.split(',').map(t => t.trim()).filter(Boolean) || [];
     const summary = (fm.match(/summary:\s*(.+)/) || [])[1]?.trim().replace(/^["']|["']$/g, '');
+    const category = (fm.match(/category:\s*(.+)/) || [])[1]?.trim().replace(/^["']|["']$/g, '') || DEFAULT_CATEGORY;
     const draft = /draft:\s*true/.test(fm);
 
     if (!title || !date) {
@@ -74,11 +80,13 @@ function scanPosts() {
       title,
       date,
       tags,
+      category,
       summary: autoSummary,
       slug: file.replace(/\.md$/, ''),
+      body,   // 只用于生成 data/content/，不会写进 posts.json
     });
 
-    console.log(`  ✅ ${file}  →  ${date} | ${title}`);
+    console.log(`  ✅ ${file}  →  ${date} | [${category}] ${title}`);
   });
 
   // 按日期倒序（最新在前）
@@ -109,11 +117,50 @@ function buildHeatmap(posts) {
   console.log(`\n✅ 已生成 ${HEATMAP_FILE}`);
 }
 
-/* ---------- 生成 posts.json ---------- */
+/* ---------- 生成 posts.json（列表，不含正文） ---------- */
 function buildPosts(posts) {
+  // 正文单独放，列表页不需要下载
+  const list = posts.map(({ body, ...meta }) => meta);
+
   ensureDir(POSTS_FILE);
-  fs.writeFileSync(POSTS_FILE, JSON.stringify(posts, null, 2), 'utf-8');
-  console.log(`✅ 已生成 ${POSTS_FILE}（共 ${posts.length} 篇）`);
+  fs.writeFileSync(POSTS_FILE, JSON.stringify(list, null, 2), 'utf-8');
+  console.log(`✅ 已生成 ${POSTS_FILE}（共 ${list.length} 篇）`);
+}
+
+/* ---------- 生成 data/content/<slug>.json（详情页数据） ---------- */
+function buildContent(posts) {
+  if (!fs.existsSync(CONTENT_DIR)) fs.mkdirSync(CONTENT_DIR, { recursive: true });
+
+  const keep = new Set();
+
+  posts.forEach(p => {
+    const file = `${p.slug}.json`;
+    keep.add(file);
+
+    fs.writeFileSync(
+      path.join(CONTENT_DIR, file),
+      JSON.stringify({
+        slug:     p.slug,
+        title:    p.title,
+        date:     p.date,
+        tags:     p.tags,
+        category: p.category,
+        summary:  p.summary,
+        body:     p.body,
+      }, null, 2),
+      'utf-8'
+    );
+  });
+
+  // 清掉已删除/改成草稿的文章留下的残骸，免得出现“幽灵文章”
+  fs.readdirSync(CONTENT_DIR)
+    .filter(f => f.endsWith('.json') && !keep.has(f))
+    .forEach(f => {
+      fs.unlinkSync(path.join(CONTENT_DIR, f));
+      console.log(`  🗑️  已清理失效的 ${f}`);
+    });
+
+  console.log(`✅ 已生成 ${CONTENT_DIR}/（共 ${posts.length} 篇正文）`);
 }
 
 /* ---------- 更新文章统计 ---------- */
@@ -139,6 +186,7 @@ function build() {
   const posts = scanPosts();
   buildHeatmap(posts);
   buildPosts(posts);
+  buildContent(posts);
   buildStats(posts);
   console.log('');
 }

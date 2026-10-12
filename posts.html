@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文章 · 米饭多加水の小窝</title>
+
+  <!-- 主题：必须同步（不加 defer）放在样式之前，第一帧就不会闪 -->
+  <script src="js/theme.js"></script>
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/background.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="stylesheet" href="css/posts.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+</head>
+<body>
+
+  <!-- 幻灯片背景 -->
+  <div class="slideshow" id="slideshow"></div>
+  <div class="overlay"></div>
+
+  <!-- 顶部导航栏 -->
+  <nav class="navbar">
+    <div class="nav-brand-wrap">
+      <a href="index.html" class="nav-brand" aria-label="米饭多加水の小窝">
+        <span class="brand-text">米饭多加水の小窝</span>
+      </a>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-li">
+        <a href="index.html" class="nav-item">
+          <span class="material-symbols-rounded">home</span>主页
+        </a>
+      </li>
+
+      <li class="nav-li has-dropdown">
+        <a href="posts.html?view=all" class="nav-item active">
+          <span class="material-symbols-rounded">description</span>文章
+          <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+        </a>
+        <div class="dropdown">
+          <a href="posts.html?view=all" class="drop-item">
+            <span class="material-symbols-rounded">article</span>
+            <div>
+              <b>全部文章</b>
+              <i>按时间倒序浏览</i>
+            </div>
+          </a>
+          <a href="posts.html?view=category" class="drop-item">
+            <span class="material-symbols-rounded">category</span>
+            <div>
+              <b>分类</b>
+              <i>按主题归类</i>
+            </div>
+          </a>
+          <a href="posts.html?view=tag" class="drop-item">
+            <span class="material-symbols-rounded">sell</span>
+            <div>
+              <b>标签</b>
+              <i>按关键词找</i>
+            </div>
+          </a>
+          <a href="posts.html?view=archive" class="drop-item">
+            <span class="material-symbols-rounded">archive</span>
+            <div>
+              <b>归档</b>
+              <i>按年月排列</i>
+            </div>
+          </a>
+        </div>
+      </li>
+
+      <li class="nav-li has-dropdown">
+        <a href="#" class="nav-item">
+          <span class="material-symbols-rounded">group</span>社交
+          <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+        </a>
+        <div class="dropdown">
+          <a href="https://github.com/ADDAP0" class="drop-item" target="_blank">
+            <span class="material-symbols-rounded">code</span>
+            <div><b>GitHub</b><i>代码仓库</i></div>
+          </a>
+          <a href="https://space.bilibili.com/3546644651968606" class="drop-item" target="_blank">
+            <span class="material-symbols-rounded">chat</span>
+            <div><b>Bilibili</b><i>视频分享</i></div>
+          </a>
+          <a href="mailto:3840447667@qq.com" class="drop-item">
+            <span class="material-symbols-rounded">mail</span>
+            <div><b>邮箱</b><i>3840447667@qq.com</i></div>
+          </a>
+        </div>
+      </li>
+
+      <li class="nav-li has-dropdown">
+        <a href="#" class="nav-item">
+          <span class="material-symbols-rounded">person</span>我的
+          <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+        </a>
+        <div class="dropdown">
+          <a href="#" class="drop-item">
+            <span class="material-symbols-rounded">badge</span>
+            <div><b>关于我</b><i>自我介绍</i></div>
+          </a>
+          <a href="#" class="drop-item">
+            <span class="material-symbols-rounded">photo_library</span>
+            <div><b>相册</b><i>生活记录</i></div>
+          </a>
+          <a href="#" class="drop-item">
+            <span class="material-symbols-rounded">favorite</span>
+            <div><b>收藏</b><i>喜欢的东西</i></div>
+          </a>
+        </div>
+      </li>
+
+      <li class="nav-li has-dropdown">
+        <a href="#" class="nav-item">
+          <span class="material-symbols-rounded">info</span>关于
+          <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+        </a>
+        <div class="dropdown">
+          <a href="post.html?slug=2026-10-12-about-site" class="drop-item">
+            <span class="material-symbols-rounded">info</span>
+            <div><b>站点介绍</b><i>这个博客是什么</i></div>
+          </a>
+          <a href="changelog.html" class="drop-item">
+            <span class="material-symbols-rounded">update</span>
+            <div><b>更新日志</b><i>最近改了什么</i></div>
+          </a>
+          <a href="license.html" class="drop-item">
+            <span class="material-symbols-rounded">verified</span>
+            <div><b>版权声明</b><i>内容授权说明</i></div>
+          </a>
+        </div>
+      </li>
+
+      <li class="nav-li has-dropdown">
+        <a href="#" class="nav-item">
+          <span class="material-symbols-rounded">link</span>链接
+          <span class="material-symbols-rounded arrow">keyboard_arrow_down</span>
+        </a>
+        <div class="dropdown">
+          <a href="#" class="drop-item">
+            <span class="material-symbols-rounded">public</span>
+            <div><b>友情链接</b><i>朋友们</i></div>
+          </a>
+          <a href="#" class="drop-item">
+            <span class="material-symbols-rounded">handshake</span>
+            <div><b>合作</b><i>联系方式</i></div>
+          </a>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <main class="posts-page">
+
+    <header class="page-header">
+      <h1 class="page-title">文章</h1>
+      <p class="page-sub" id="pageSub">加载中…</p>
+    </header>
+
+    <!-- 视图切换 -->
+    <nav class="view-tabs" id="viewTabs">
+      <a class="view-tab" href="posts.html?view=all" data-view="all">
+        <span class="material-symbols-rounded">article</span>全部
+      </a>
+      <a class="view-tab" href="posts.html?view=category" data-view="category">
+        <span class="material-symbols-rounded">category</span>分类
+      </a>
+      <a class="view-tab" href="posts.html?view=tag" data-view="tag">
+        <span class="material-symbols-rounded">sell</span>标签
+      </a>
+      <a class="view-tab" href="posts.html?view=archive" data-view="archive">
+        <span class="material-symbols-rounded">archive</span>归档
+      </a>
+    </nav>
+
+    <!-- 分类 / 标签的筛选胶囊，由 JS 填充 -->
+    <div class="filter-bar" id="filterBar"></div>
+
+    <!-- 文章列表，由 JS 填充 -->
+    <div id="postList">
+      <div class="list-state">加载中…</div>
+    </div>
+
+  </main>
+
+  <div class="footer-bar" style="max-width:860px;margin:24px auto 40px;">
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="status">
+      <span class="dot-green"></span>
+      <span>持续更新中</span>
+    </div>
+    <div class="icp" style="margin-left:auto;">萌ICP备20260240号</div>
+  </div>
+
+  <script src="js/slideshow.js"></script>
+  <script src="js/clock.js"></script>
+  <script src="js/posts.js"></script>
+</body>
+</html>

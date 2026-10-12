@@ -23,7 +23,7 @@ async function loadHeatmap() {
     weekMap[key] += dailyData[dateStr].count;
   });
 
-  // ===== 时间范围：当年 1 月 ~ 当月 =====
+  // ===== 时间范围：当年 1 月 ~ 12 月 =====
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -32,7 +32,6 @@ async function loadHeatmap() {
   // 生成 12 个月 × 5 周的位置表
   // grid[row][col] = 该格对应的"周起始日期"（周一的 Date）
   const grid = [];
-  const maxCountByWeek = Math.max(1, ...Object.values(weekMap));
 
   const ROWS = 5;
   const COLS = 12;
@@ -45,28 +44,38 @@ async function loadHeatmap() {
     }
   }
 
-  // 每个月填充
-for (let m = 0; m < 12; m++) {
-  const monthStart = new Date(year, m, 1);
-  const monthEnd   = new Date(year, m + 1, 0);
+  // 每周归属到一个月份列（单次按时间顺序遍历，天然不会重复）
+  // 归属规则：一周（周一~周日）算进"周四"所在的那个月 —— 周四落在哪个月，
+  // 这一周就有 4 天属于该月，是多数派；所以同一周只可能出现一次。
+  // 例外是跨年那一周（周四落在上一年 12 月 / 下一年 1 月）：把它归到本年的
+  // 1 月 / 12 月，否则年初、年末那几天写的文章会整个消失。
+  // 一个月最多有 5 个周四，跨年首/末周各再补 1 个也仍是 5，所以 5 行刚好够。
+  const yearEnd = new Date(year, 11, 31);
+  const weeksOfMonth = Array.from({ length: COLS }, () => []);
 
-  // 用"月初所在的周一"作为起点（可能在上个月）
-  const firstMonday = getMonday(monthStart);
+  for (let cur = getMonday(new Date(year, 0, 1)); cur <= yearEnd; cur.setDate(cur.getDate() + 7)) {
+    const thursday = new Date(cur);
+    thursday.setDate(thursday.getDate() + 3);
 
-  // 从这个周一开始，每 7 天一个，直到月末
-  const mondays = [];
-  let cur = new Date(firstMonday);
+    let col;
+    if (thursday.getFullYear() < year)      col = 0;              // 跨年首周 → 归 1 月
+    else if (thursday.getFullYear() > year) col = COLS - 1;       // 跨年末周 → 归 12 月
+    else                                    col = thursday.getMonth();
 
-  while (cur <= monthEnd) {
-    mondays.push(new Date(cur));
-    cur.setDate(cur.getDate() + 7);
+    weeksOfMonth[col].push(new Date(cur));
   }
 
-  // 最多 5 周
-  mondays.slice(0, ROWS).forEach((d, i) => {
-    grid[i][m] = d;
+  weeksOfMonth.forEach((mondays, m) => {
+    mondays.slice(0, ROWS).forEach((d, i) => {
+      grid[i][m] = d;
+    });
   });
-}
+
+  // 色阶只按"真正显示出来的周"算，避免范围外的数据把整年压暗
+  const maxCountByWeek = Math.max(
+    1,
+    ...grid.flat().filter(Boolean).map(d => weekMap[formatDate(d)] || 0)
+  );
 
   // ===== 渲染 =====
   heatmap.innerHTML = '';

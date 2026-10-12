@@ -19,12 +19,17 @@ async function loadLatestPost() {
     const latest = posts[0];
 
     titleEl.textContent = latest.title;
-    dateEl.textContent  = latest.date.replace(/-/g, '.') + ' · ' + (latest.tags[0] || '随笔');
+    dateEl.textContent  = latest.date.replace(/-/g, '.') + ' · ' +
+                          (latest.category || latest.tags[0] || '随笔');
 
-    // 点击卡片 → 跳到文章（等你有详情页再启用）
-    // titleEl.parentElement.parentElement.addEventListener('click', () => {
-    //   location.href = `post.html?slug=${latest.slug}`;
-    // });
+    // 点击整张卡 → 进文章详情页
+    const card = titleEl.closest('.post-card');
+    if (card) {
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', () => {
+        location.href = 'post.html?slug=' + encodeURIComponent(latest.slug);
+      });
+    }
 
   } catch (e) {
     console.error('[latest-post]', e);

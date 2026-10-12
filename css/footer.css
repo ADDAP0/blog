@@ -6,10 +6,10 @@
   padding: 14px 18px;
   border-radius: 16px;
 
-  background-color: rgba(30, 41, 59, 0.85);
+  background-color: var(--bar-bg);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--bar-border);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
 
   color: #fff;

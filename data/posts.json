@@ -1,11 +1,24 @@
 [
   {
+    "file": "2026-10-12-about-site.md",
+    "title": "站点介绍",
+    "date": "2026-10-12",
+    "tags": [
+      "站点介绍",
+      "关于"
+    ],
+    "category": "建站",
+    "summary": "介绍一下这个小窝：它是什么、有哪些功能、用什么搭的、怎么找到我。",
+    "slug": "2026-10-12-about-site"
+  },
+  {
     "file": "2026-10-11-hello-world.md",
     "title": "Hello World",
     "date": "2026-10-11",
     "tags": [
       "随笔"
     ],
+    "category": "建站",
     "summary": "我的第一篇文章，记录一下搭建博客的过程。",
     "slug": "2026-10-11-hello-world"
   }

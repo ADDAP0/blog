@@ -2,6 +2,7 @@
 title: Hello World
 date: 2026-10-11
 tags: [随笔]
+category: 建站
 summary: 我的第一篇文章，记录一下搭建博客的过程。
 ---
 

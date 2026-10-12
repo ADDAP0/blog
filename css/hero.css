@@ -31,7 +31,7 @@
   border-radius: 18px;
   overflow: hidden;
   flex-shrink: 0;
-  border: 3px solid rgba(255, 255, 255, 0.95);
+  border: 3px solid var(--inner-highlight-strong);
   box-shadow: 0 8px 22px rgba(99, 102, 241, 0.28);
 }
 
@@ -40,7 +40,7 @@
 .info-name {
   font-size: 1.7rem;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-strong);
   margin-bottom: 6px;
   line-height: 1.15;
 }
@@ -48,12 +48,12 @@
 .info-desc {
   font-size: 0.88rem;
   line-height: 1.6;
-  color: rgba(31, 41, 55, 0.65);
+  color: var(--text-soft);
 }
 
 .info-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent);
+  background: linear-gradient(90deg, transparent, var(--hairline), transparent);
   margin: 18px 0;
 }
 
@@ -81,7 +81,7 @@
   display: block;
   font-style: normal;
   font-size: 0.7rem;
-  color: rgba(31, 41, 55, 0.55);
+  color: var(--text-muted);
   margin-top: 5px;
   letter-spacing: 1px;
 }
@@ -95,9 +95,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.65);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  color: #4b5563;
+  background: var(--surface-soft);
+  border: 1px solid var(--border-soft);
+  color: var(--text-icon);
   text-decoration: none;
   transition: all 0.25s ease;
 }
@@ -127,9 +127,9 @@
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  border: 3px solid rgba(255, 255, 255, 0.95);
+  border: 3px solid var(--inner-highlight-strong);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-  background: #e5e7eb;
+  background: var(--surface-solid);
   transition: transform 0.3s ease;
 }
 
@@ -150,32 +150,32 @@
   gap: 4px;
   padding: 3px 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--surface-strong);
+  border: 1px solid var(--border-soft);
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.8px;
-  color: #4b5563;
+  color: var(--text-icon);
   margin-bottom: 6px;
 }
 
-.music-tag .material-symbols-rounded { font-size: 0.85rem; color: #6366f1; }
+.music-tag .material-symbols-rounded { font-size: 0.85rem; color: var(--accent); }
 
 .music-title {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-strong);
   margin-bottom: 2px;
 }
 
 .music-artist {
   font-size: 0.8rem;
-  color: rgba(31, 41, 55, 0.6);
+  color: var(--text-soft);
 }
 
 .music-lyric {
   font-size: 0.75rem;
-  color: rgba(31, 41, 55, 0.55);
+  color: var(--text-muted);
   margin-bottom: 14px;
 }
 
@@ -188,7 +188,7 @@
 
 .time {
   font-size: 0.7rem;
-  color: rgba(31, 41, 55, 0.55);
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -196,7 +196,7 @@
   flex: 1;
   height: 5px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--tint-2);
   position: relative;
   cursor: pointer;
 }
@@ -244,13 +244,13 @@
   align-items: center;
   justify-content: center;
   background: transparent;
-  color: #4b5563;
+  color: var(--text-icon);
   transition: all 0.25s ease;
 }
 
 .ctrl-btn .material-symbols-rounded { font-size: 1.5rem; }
 
-.ctrl-btn:hover { background: rgba(0,0,0,0.06); color: #6366f1; }
+.ctrl-btn:hover { background: var(--tint); color: var(--accent); }
 
 .ctrl-btn.play {
   width: 52px;
@@ -272,10 +272,10 @@
   padding: 18px 28px;
   border-radius: 16px;
 
-  background-color: rgba(30, 41, 59, 0.78);
+  background-color: var(--bar-bg);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--bar-border);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
 
   color: #fff;

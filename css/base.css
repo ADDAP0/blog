@@ -6,7 +6,8 @@
 }
 
 body {
-  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: var(--font-sans);
+  color: var(--text);
   overflow-x: hidden;
   min-height: 100vh;
   padding-top: 100px;

@@ -1,0 +1,152 @@
+/* ===================================================
+   主题令牌（设计变量）
+   浅色 = :root 默认值；暗色 = html[data-theme="dark"] 覆盖
+   规则：两套主题必须定义“完全相同”的令牌名，否则暗色下会漏用浅色值
+   =================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* --- 页面底色（画在 canvas 上，位于幻灯片之下）--- */
+  --page-bg: #ffffff;
+
+  /* --- 毛玻璃表面 --- */
+  --surface:               rgba(255, 255, 255, 0.72);
+  --surface-strong:        rgba(255, 255, 255, 0.85);
+  --surface-soft:          rgba(255, 255, 255, 0.6);
+  --surface-faint:         rgba(255, 255, 255, 0.04);
+  --surface-hover:         rgba(255, 255, 255, 0.5);
+  --surface-solid:         #e5e7eb;
+  --nav-hover:             rgba(255, 255, 255, 0.12);
+  --nav-active:            rgba(255, 255, 255, 0.18);
+
+  /* --- 描边 / 分隔线 / 内侧高光 --- */
+  --border:                rgba(255, 255, 255, 0.6);
+  --border-soft:           rgba(0, 0, 0, 0.06);
+  --hairline:              rgba(0, 0, 0, 0.08);
+  --divider:               rgba(255, 255, 255, 0.4);
+  --inner-highlight:       rgba(255, 255, 255, 0.9);
+  --inner-highlight-strong: rgba(255, 255, 255, 0.95);
+
+  /* --- 文字 --- */
+  --text:                  #1f2937;
+  --text-strong:           #111827;
+  --text-body:             rgba(31, 41, 55, 0.8);
+  --text-soft:             rgba(31, 41, 55, 0.68);
+  --text-muted:            rgba(31, 41, 55, 0.55);
+  --text-faint:            rgba(31, 41, 55, 0.45);
+  --text-icon:             #4b5563;
+  --text-gray:             #6b7280;
+
+  /* --- 交互底色 / 小圆点 --- */
+  --tint:                  rgba(0, 0, 0, 0.06);
+  --tint-2:                rgba(0, 0, 0, 0.08);
+  --dot:                   rgba(0, 0, 0, 0.15);
+
+  /* --- 热力图空格 --- */
+  --heat-cell:             rgba(0, 0, 0, 0.06);
+  --heat-cell-border:      rgba(0, 0, 0, 0.04);
+
+  /* --- 阴影 --- */
+  --shadow-card:           0 16px 48px rgba(0, 0, 0, 0.12);
+  --shadow-soft:           0 12px 36px rgba(0, 0, 0, 0.08);
+  --shadow-pop:            0 18px 48px rgba(0, 0, 0, 0.15);
+
+  /* --- 背景幻灯片遮罩 --- */
+  --overlay-bg:             rgba(255, 255, 255, 0.08);
+  --overlay-highlight:      rgba(255, 255, 255, 0.25);
+  --overlay-highlight-soft: rgba(255, 255, 255, 0.08);
+  --slide-filter:           none;
+
+  /* --- 深色长条（歌词条 / 底部条）：两套主题都是深色 --- */
+  --bar-bg:                rgba(30, 41, 59, 0.82);
+  --bar-border:            rgba(255, 255, 255, 0.1);
+
+  /* --- 主题卡图标 --- */
+  --mode-icon-inner:       rgba(255, 255, 255, 0.9);
+  --mode-icon-ring:        rgba(255, 255, 255, 0.6);
+
+  /* --- 品牌色（两套主题共用，不随主题变化）--- */
+  --accent:                #6366f1;
+  --accent-strong:         #4f46e5;
+  --accent-tint:           rgba(99, 102, 241, 0.1);
+
+  /* --- 字体族 --- */
+  --font-sans: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --page-bg: #0b1220;
+
+  --surface:               rgba(30, 41, 59, 0.62);
+  --surface-strong:        rgba(30, 41, 59, 0.86);
+  --surface-soft:          rgba(255, 255, 255, 0.08);
+  --surface-faint:         rgba(255, 255, 255, 0.05);
+  --surface-hover:         rgba(255, 255, 255, 0.14);
+  --surface-solid:         #334155;
+  --nav-hover:             rgba(255, 255, 255, 0.08);
+  --nav-active:            rgba(255, 255, 255, 0.14);
+
+  --border:                rgba(255, 255, 255, 0.14);
+  --border-soft:           rgba(255, 255, 255, 0.1);
+  --hairline:              rgba(255, 255, 255, 0.14);
+  --divider:               rgba(255, 255, 255, 0.12);
+  --inner-highlight:       rgba(255, 255, 255, 0.12);
+  --inner-highlight-strong: rgba(255, 255, 255, 0.22);
+
+  --text:                  #e2e8f0;
+  --text-strong:           #f1f5f9;
+  --text-body:             rgba(226, 232, 240, 0.85);
+  --text-soft:             rgba(226, 232, 240, 0.72);
+  --text-muted:            rgba(226, 232, 240, 0.55);
+  --text-faint:            rgba(226, 232, 240, 0.42);
+  --text-icon:             #cbd5e1;
+  --text-gray:             #94a3b8;
+
+  --tint:                  rgba(255, 255, 255, 0.1);
+  --tint-2:                rgba(255, 255, 255, 0.14);
+  --dot:                   rgba(255, 255, 255, 0.25);
+
+  --heat-cell:             rgba(255, 255, 255, 0.07);
+  --heat-cell-border:      rgba(255, 255, 255, 0.05);
+
+  --shadow-card:           0 16px 48px rgba(0, 0, 0, 0.5);
+  --shadow-soft:           0 12px 36px rgba(0, 0, 0, 0.45);
+  --shadow-pop:            0 18px 48px rgba(0, 0, 0, 0.55);
+
+  --overlay-bg:             rgba(2, 6, 23, 0.55);
+  --overlay-highlight:      rgba(255, 255, 255, 0.08);
+  --overlay-highlight-soft: rgba(255, 255, 255, 0.04);
+  --slide-filter:           brightness(0.7) saturate(0.85);
+
+  --bar-bg:                rgba(15, 23, 42, 0.85);
+  --bar-border:            rgba(255, 255, 255, 0.14);
+
+  --mode-icon-inner:       rgba(30, 41, 59, 0.92);
+  --mode-icon-ring:        rgba(255, 255, 255, 0.14);
+}
+
+/* 页面底色画在 html 上：这样 z-index:-1 的幻灯片和遮罩才会正确地盖在它上面
+   （如果放在 body 上，body 背景会按绘制顺序盖住负 z-index 的幻灯片） */
+html {
+  background-color: var(--page-bg);
+}
+
+/* 切换主题时给一段柔和的颜色过渡（只过渡颜色相关属性，不动布局） */
+html.is-theming,
+html.is-theming * {
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.is-theming,
+  html.is-theming * {
+    transition: none;
+  }
+}
