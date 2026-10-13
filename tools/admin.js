@@ -701,18 +701,22 @@
 
       bar.classList.remove('ok', 'dirty', 'ahead', 'error');
 
-      if (r.changes.length && r.ahead) {
-        bar.classList.add('dirty');
-        txt.textContent = r.changes.length + ' 处改动 + ' + r.ahead + ' 个提交待推送';
-      } else if (r.changes.length) {
-        bar.classList.add('dirty');
-        txt.textContent = r.changes.length + ' 处改动没提交';
-      } else if (r.ahead) {
-        bar.classList.add('ahead');
-        txt.textContent = r.ahead + ' 个提交没推送';
-      } else {
+      /* 三种「没同步」的情况都要列出来，别漏掉落后云端 */
+      const bits = [];
+      if (r.changes.length) bits.push(r.changes.length + ' 处改动没提交');
+      if (r.ahead)   bits.push(r.ahead + ' 个提交没推送');
+      if (r.behind)  bits.push('落后云端 ' + r.behind + ' 个提交');
+
+      if (!bits.length) {
         bar.classList.add('ok');
         txt.textContent = '已与 GitHub 同步';
+      } else if (r.behind && !r.ahead && !r.changes.length) {
+        /* 本地很干净，只是云端更新了 */
+        bar.classList.add('ahead');
+        txt.textContent = bits.join(' · ');
+      } else {
+        bar.classList.add('dirty');
+        txt.textContent = bits.join(' · ');
       }
 
       $('badgeTrash').textContent = r.trash;
@@ -901,8 +905,14 @@
     ahead.querySelector('span').textContent = r.ahead ? r.ahead + ' 个提交' : '无';
     ahead.classList.add(r.ahead ? 'warn' : 'done');
 
-    remote.querySelector('span').textContent = r.head || '—';
-    remote.classList.add('done');
+    /* 云端那一格要反映「落后多少」，不然会误导成已经同步好了 */
+    if (r.behind) {
+      remote.querySelector('span').textContent = '落后 ' + r.behind + ' 个提交';
+      remote.classList.add('todo');
+    } else {
+      remote.querySelector('span').textContent = r.remote || r.head || '—';
+      remote.classList.add('done');
+    }
   }
 
   async function loadStatus() {
@@ -921,9 +931,15 @@
 
     const box = $('changeList');
     if (!r.changes.length) {
-      box.textContent = r.ahead
-        ? '工作区干净，但有 ' + r.ahead + ' 个提交还没推上去'
-        : '工作区干净，本地和云端一致';
+      if (r.ahead && r.behind) {
+        box.textContent = '工作区干净，但本地领先 ' + r.ahead + ' 个提交、落后云端 ' + r.behind + ' 个，两边分叉了';
+      } else if (r.ahead) {
+        box.textContent = '工作区干净，但有 ' + r.ahead + ' 个提交还没推上去';
+      } else if (r.behind) {
+        box.textContent = '工作区干净，云端有 ' + r.behind + ' 个新提交还没拉下来';
+      } else {
+        box.textContent = '工作区干净，本地和云端一致';
+      }
       return;
     }
 

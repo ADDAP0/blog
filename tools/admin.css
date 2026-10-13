@@ -21,6 +21,9 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* hidden 属性会被 .btn 这类 display 规则覆盖掉，这里强制生效 */
+[hidden] { display: none !important; }
+
 body {
   font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
   background: var(--bg);
