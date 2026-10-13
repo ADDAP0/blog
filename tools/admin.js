@@ -39,6 +39,7 @@
     music:   loadMusic,
     images:  loadImages,
     friends: loadFriends,
+    trash:   loadTrash,
     publish: loadStatus,
   };
 
@@ -124,6 +125,7 @@
       $('writeTitle').textContent = '编辑文章';
       msg($('writeMsg'), '已保存 ' + r.file + '，站点数据已刷新', 'ok');
       loadCats();
+      afterWrite();
     } catch (e) {
       msg($('writeMsg'), '保存失败：' + e.message, 'err');
     } finally {
@@ -237,10 +239,11 @@
 
     if (delBtn) {
       const file = delBtn.dataset.del;
-      if (!confirm('确定删掉 ' + file + ' 吗？此操作会直接从磁盘删除文件。')) return;
+      if (!confirm('删除 ' + file + ' ？\n\n会先放进「回收站」，之后随时能恢复。')) return;
       try {
         await api('/api/post?file=' + encodeURIComponent(file), { method: 'DELETE' });
         loadPosts();
+        afterWrite();
       } catch (err) {
         alert('删除失败：' + err.message);
       }
@@ -319,6 +322,7 @@
         body: JSON.stringify({ items: album }),
       });
       msg($('albumMsg'), '已保存 ' + r.count + ' 张，站点数据已刷新', 'ok');
+      afterWrite();
     } catch (e) {
       msg($('albumMsg'), '保存失败：' + e.message, 'err');
     } finally {
@@ -420,10 +424,12 @@
 
     if (del) {
       const name = del.dataset.delimg;
-      if (!confirm('确定删除 images/' + name + ' 吗？已经引用它的文章和相册会显示不出来。')) return;
+      if (!confirm('删除 images/' + name + ' ？\n\n会先放进「回收站」，之后随时能恢复。\n' +
+                   '（引用它的文章和相册会暂时显示不出来）')) return;
       try {
         await api('/api/file?src=' + encodeURIComponent('images/' + name), { method: 'DELETE' });
         loadImages();
+        afterWrite();
       } catch (err) {
         alert('删除失败：' + err.message);
       }
@@ -563,6 +569,7 @@
       });
       msg($('musicMsg'), '已保存 ' + r.count + ' 首', 'ok');
       loadMusic();
+      afterWrite();
     } catch (e) {
       msg($('musicMsg'), '保存失败：' + e.message, 'err');
     } finally {
@@ -594,6 +601,7 @@
     msg($('musicMsg'),
         '上传了 ' + done.length + ' 个文件' + (added ? '，自动新增 ' + added + ' 首' : ''),
         'ok');
+    afterWrite();
   });
 
   /* ===================================================
@@ -673,6 +681,7 @@
       });
       msg($('friendMsg'), '已保存 ' + r.count + ' 条', 'ok');
       loadFriends();
+      afterWrite();
     } catch (e) {
       msg($('friendMsg'), '保存失败：' + e.message, 'err');
     } finally {
@@ -681,32 +690,122 @@
   });
 
   /* ===================================================
-     发布
+     同步状态（顶部常驻条）
      =================================================== */
-  async function loadStatus() {
+  async function refreshSync() {
+    const bar = $('syncBar');
+    const txt = $('syncText');
+
     try {
       const r = await api('/api/status');
-      $('gitInfo').textContent =
-        '分支 ' + r.branch + ' · 未推送 ' + r.ahead + ' 个提交 · 未提交改动 ' + r.changes.length + ' 个';
 
-      const box = $('changeList');
-      if (!r.changes.length) {
-        box.textContent = '没有未提交的改动';
-        return;
+      bar.classList.remove('ok', 'dirty', 'ahead', 'error');
+
+      if (r.changes.length && r.ahead) {
+        bar.classList.add('dirty');
+        txt.textContent = r.changes.length + ' 处改动 + ' + r.ahead + ' 个提交待推送';
+      } else if (r.changes.length) {
+        bar.classList.add('dirty');
+        txt.textContent = r.changes.length + ' 处改动没提交';
+      } else if (r.ahead) {
+        bar.classList.add('ahead');
+        txt.textContent = r.ahead + ' 个提交没推送';
+      } else {
+        bar.classList.add('ok');
+        txt.textContent = '已与 GitHub 同步';
       }
 
-      box.innerHTML = r.changes.map(line => {
-        const st = line.slice(0, 2);
-        const file = line.slice(3);
-        const cls = st.indexOf('??') === 0 ? 'add' : (st.indexOf('D') !== -1 ? 'del' : 'mod');
-        return '<div><span class="st ' + cls + '">' + esc(st) + '</span>' + esc(file) + '</div>';
-      }).join('');
+      $('badgeTrash').textContent = r.trash;
+      return r;
     } catch (e) {
-      $('gitInfo').textContent = '读取 git 状态失败：' + e.message;
+      bar.classList.remove('ok', 'dirty', 'ahead');
+      bar.classList.add('error');
+      txt.textContent = '读不到 git 状态';
+      return null;
+    }
+  }
+
+  $('syncBar').addEventListener('click', () => showTab('publish'));
+
+  /* 任何写操作之后都刷一次，保证顶上那条始终是真的 */
+  const afterWrite = () => refreshSync();
+
+  /* ===================================================
+     发布
+     =================================================== */
+  function paintSteps(r) {
+    const local  = $('stepLocal');
+    const ahead  = $('stepAhead');
+    const remote = $('stepRemote');
+
+    [local, ahead, remote].forEach(el => el.classList.remove('todo', 'done', 'warn'));
+
+    const n = r.changes.length;
+    local.querySelector('span').textContent = n ? n + ' 处' : '无';
+    local.classList.add(n ? 'todo' : 'done');
+
+    ahead.querySelector('span').textContent = r.ahead ? r.ahead + ' 个提交' : '无';
+    ahead.classList.add(r.ahead ? 'warn' : 'done');
+
+    remote.querySelector('span').textContent = r.head || '—';
+    remote.classList.add('done');
+  }
+
+  async function loadStatus() {
+    const r = await refreshSync();
+    if (!r) { $('gitInfo').textContent = '读取 git 状态失败'; return; }
+
+    paintSteps(r);
+
+    $('gitInfo').textContent =
+      '分支 ' + r.branch +
+      ' · 本地 ' + (r.head || '?') +
+      (r.upstream ? ' · 云端 ' + r.upstream : '') +
+      ' · 未提交 ' + r.changes.length +
+      ' · 未推送 ' + r.ahead +
+      (r.behind ? ' · 落后云端 ' + r.behind : '');
+
+    const box = $('changeList');
+    if (!r.changes.length) {
+      box.textContent = r.ahead
+        ? '工作区干净，但有 ' + r.ahead + ' 个提交还没推上去'
+        : '工作区干净，本地和云端一致';
+      return;
+    }
+
+    box.innerHTML = r.changes.map(line => {
+      const st = line.slice(0, 2);
+      const file = line.slice(3);
+      const cls = st.indexOf('??') === 0 ? 'add' : (st.indexOf('D') !== -1 ? 'del' : 'mod');
+      return '<div><span class="st ' + cls + '">' + esc(st) + '</span>' + esc(file) + '</div>';
+    }).join('');
+  }
+
+  /* 提交 / 推送 / 提交并推送，走同一套收尾逻辑 */
+  async function runGit(btn, url, busyText) {
+    btn.disabled = true;
+    msg($('publishMsg'), busyText, 'busy');
+
+    try {
+      const r = await api(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: $('commitMsg').value }),
+      });
+      msg($('publishMsg'), r.message || (r.ok ? '完成' : '没做成'), r.ok ? 'ok' : 'err');
+      $('publishOut').textContent = r.output || '';
+    } catch (e) {
+      msg($('publishMsg'), '失败：' + e.message, 'err');
+    } finally {
+      btn.disabled = false;
+      loadStatus();
     }
   }
 
   $('btnStatus').addEventListener('click', loadStatus);
+  $('btnCommit').addEventListener('click', () => runGit($('btnCommit'), '/api/commit', '提交到本地中…'));
+  $('btnPushOnly').addEventListener('click', () => runGit($('btnPushOnly'), '/api/push', '推送到 GitHub 中…'));
+  $('btnPublish').addEventListener('click', () => runGit($('btnPublish'), '/api/publish', '提交并推送中…'));
 
   $('btnBuild').addEventListener('click', async () => {
     msg($('publishMsg'), '重建中…', 'busy');
@@ -719,24 +818,109 @@
     }
   });
 
-  $('btnPublish').addEventListener('click', async () => {
-    const btn = $('btnPublish');
-    btn.disabled = true;
-    msg($('publishMsg'), '正在提交并推送…', 'busy');
+  $('btnDiscard').addEventListener('click', async () => {
+    if (!confirm('放弃所有「还没提交」的改动？\n\n会把已跟踪文件恢复到上次提交的样子。\n' +
+                 '已经提交过的东西不受影响，新上传但还没提交的文件也不会被删。')) return;
 
+    msg($('publishMsg'), '恢复中…', 'busy');
     try {
-      const r = await api('/api/publish', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: $('commitMsg').value }),
-      });
-      msg($('publishMsg'), r.message || (r.ok ? '完成' : '失败'), r.ok ? 'ok' : 'err');
+      const r = await api('/api/discard', { method: 'POST' });
+      msg($('publishMsg'), r.message, r.ok ? 'ok' : 'err');
       $('publishOut').textContent = r.output || '';
     } catch (e) {
       msg($('publishMsg'), '失败：' + e.message, 'err');
     } finally {
-      btn.disabled = false;
       loadStatus();
+    }
+  });
+
+  /* ===================================================
+     回收站
+     =================================================== */
+  function fmtTime(ms) {
+    const d = new Date(ms);
+    const p = n => String(n).padStart(2, '0');
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+           ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  async function loadTrash() {
+    const box = $('trashList');
+    try {
+      const r = await api('/api/trash');
+      $('badgeTrash').textContent = r.items.length;
+
+      if (!r.items.length) {
+        box.innerHTML = '<div class="empty">回收站是空的</div>';
+        return;
+      }
+
+      box.innerHTML = r.items.map(it => {
+        const isPost = /^posts\//.test(it.orig);
+        return '<div class="trash-row' + (it.exists ? '' : ' missing') + '">' +
+          '<span class="ico">' + (isPost ? '📄' : '🖼️') + '</span>' +
+          '<div class="grow">' +
+            '<div class="t">' + esc(it.name) + '</div>' +
+            '<div class="m">原位置 ' + esc(it.orig) + ' · ' + fmtSize(it.size) +
+              ' · 删除于 ' + fmtTime(it.deletedAt) +
+              (it.exists ? '' : ' · 文件已缺失') + '</div>' +
+          '</div>' +
+          '<button class="btn sm" data-restore="' + esc(it.id) + '"' +
+            (it.exists ? '' : ' disabled') + '>恢复</button>' +
+          '<button class="btn sm danger" data-purge="' + esc(it.id) + '">彻底删除</button>' +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      box.innerHTML = '<div class="empty">加载失败：' + esc(e.message) + '</div>';
+    }
+  }
+
+  $('trashList').addEventListener('click', async e => {
+    const rs = e.target.closest('[data-restore]');
+    const pg = e.target.closest('[data-purge]');
+
+    if (rs) {
+      msg($('trashMsg'), '恢复中…', 'busy');
+      try {
+        const r = await api('/api/trash/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: rs.dataset.restore }),
+        });
+        msg($('trashMsg'), r.message, 'ok');
+      } catch (err) {
+        msg($('trashMsg'), '恢复失败：' + err.message, 'err');
+      } finally {
+        loadTrash();
+        afterWrite();
+      }
+      return;
+    }
+
+    if (pg) {
+      if (!confirm('彻底删除这一条？删了就真找不回来了。')) return;
+      try {
+        await api('/api/trash?id=' + encodeURIComponent(pg.dataset.purge), { method: 'DELETE' });
+        msg($('trashMsg'), '已彻底删除', 'ok');
+      } catch (err) {
+        msg($('trashMsg'), '失败：' + err.message, 'err');
+      } finally {
+        loadTrash();
+      }
+    }
+  });
+
+  $('btnTrashReload').addEventListener('click', loadTrash);
+
+  $('btnTrashClear').addEventListener('click', async () => {
+    if (!confirm('清空回收站？里面的文件会被永久删除，无法恢复。')) return;
+    try {
+      const r = await api('/api/trash', { method: 'DELETE' });
+      msg($('trashMsg'), '已清空 ' + ((r.result && r.result.cleared) || 0) + ' 项', 'ok');
+    } catch (e) {
+      msg($('trashMsg'), '失败：' + e.message, 'err');
+    } finally {
+      loadTrash();
     }
   });
 
@@ -748,22 +932,26 @@
   loadCats();
 
   /* 支持用 #list / #album 这样的锚点直接打开某个页签 */
-  const TABS = ['write', 'list', 'album', 'music', 'images', 'friends', 'publish'];
+  const TABS = ['write', 'list', 'album', 'music', 'images', 'friends', 'trash', 'publish'];
   const hash = (location.hash || '').replace(/^#/, '');
   if (TABS.indexOf(hash) !== -1) showTab(hash);
 
   /* 侧栏计数先填上，不用等切页签 */
   (async function initBadges() {
     try {
-      const [p, g, m, im, fr] = await Promise.all([
+      const [p, g, m, im, fr, tr] = await Promise.all([
         api('/api/posts'), api('/api/gallery'), api('/api/music'),
-        api('/api/images'), api('/api/friends'),
+        api('/api/images'), api('/api/friends'), api('/api/trash'),
       ]);
       $('badgePosts').textContent   = p.posts.length;
       $('badgeAlbum').textContent   = g.items.length;
       $('badgeMusic').textContent   = m.items.length;
       $('badgeImages').textContent  = im.images.length;
       $('badgeFriends').textContent = fr.items.length;
+      $('badgeTrash').textContent   = tr.items.length;
     } catch (e) { /* 拿不到就先空着 */ }
   })();
+
+  refreshSync();
+  setInterval(refreshSync, 20000);   // 每 20 秒看一眼同步状态
 })();

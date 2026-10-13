@@ -11,6 +11,10 @@
   <header class="topbar">
     <div class="brand">米饭多加水の小窝 · <span>写作后台</span></div>
     <div class="spacer"></div>
+    <button class="sync" id="syncBar" type="button" title="点这里查看同步状态">
+      <span class="sync-dot" id="syncDot"></span>
+      <span id="syncText">检查中…</span>
+    </button>
     <div class="path">只在本机运行 · 127.0.0.1</div>
   </header>
 
@@ -23,6 +27,7 @@
       <button data-tab="music"><span class="ico">🎵</span>音乐<span class="badge" id="badgeMusic">0</span></button>
       <button data-tab="images"><span class="ico">📁</span>图片库<span class="badge" id="badgeImages">0</span></button>
       <button data-tab="friends"><span class="ico">🔗</span>友链<span class="badge" id="badgeFriends">0</span></button>
+      <button data-tab="trash"><span class="ico">🗑️</span>回收站<span class="badge" id="badgeTrash">0</span></button>
       <button data-tab="publish"><span class="ico">🚀</span>发布</button>
     </nav>
 
@@ -182,12 +187,44 @@
         </div>
       </section>
 
+      <!-- ========== 回收站 ========== -->
+      <section class="tab" id="tab-trash">
+        <h2 class="page-title">回收站</h2>
+        <p class="page-hint">
+          删掉的文章和图片会先放到这里，不会真的消失。恢复后会自动重建站点数据。
+        </p>
+
+        <div class="card">
+          <div id="trashList"><div class="empty">加载中…</div></div>
+          <div class="actions" style="margin-top:16px">
+            <button class="btn" id="btnTrashReload">↻ 重新载入</button>
+            <button class="btn danger" id="btnTrashClear">清空回收站</button>
+            <span class="msg" id="trashMsg"></span>
+          </div>
+        </div>
+      </section>
+
       <!-- ========== 发布 ========== -->
       <section class="tab" id="tab-publish">
         <h2 class="page-title">发布</h2>
         <p class="page-hint">
-          提交并推送到 GitHub。推送后 Actions 会自动更新线上数据，等一两分钟就能在站点上看到。
+          「提交」只写本地 git 历史、不联网，「推送」才需要网络。
+          所以断网也不会让你的改动丢失：先提交，等网络好了再推。
         </p>
+
+        <div class="steps">
+          <div class="step" id="stepLocal">
+            <i>①</i><b>本地改动</b><span>—</span>
+          </div>
+          <div class="step-arrow">→</div>
+          <div class="step" id="stepAhead">
+            <i>②</i><b>已提交未推送</b><span>—</span>
+          </div>
+          <div class="step-arrow">→</div>
+          <div class="step" id="stepRemote">
+            <i>③</i><b>GitHub</b><span>—</span>
+          </div>
+        </div>
 
         <div class="card">
           <label class="field"><span>提交说明</span>
@@ -195,12 +232,20 @@
           </label>
           <div style="font-size:12.5px;color:var(--muted);margin-bottom:8px" id="gitInfo">读取中…</div>
           <div class="change-list" id="changeList"></div>
+
           <div class="actions" style="margin-top:16px">
+            <button class="btn" id="btnCommit">📦 只提交到本地</button>
+            <button class="btn" id="btnPushOnly">☁️ 只推送</button>
             <button class="btn primary" id="btnPublish">🚀 提交并推送</button>
+          </div>
+
+          <div class="actions" style="margin-top:10px">
             <button class="btn" id="btnStatus">↻ 刷新状态</button>
             <button class="btn" id="btnBuild">🔨 只重建数据</button>
+            <button class="btn danger" id="btnDiscard">↩️ 放弃未提交的改动</button>
             <span class="msg" id="publishMsg"></span>
           </div>
+
           <div class="output" id="publishOut"></div>
         </div>
       </section>

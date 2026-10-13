@@ -196,10 +196,15 @@ async function deletePost(res, url) {
   const target = underBase(POSTS_DIR, file);
   if (!target || !fs.existsSync(target)) throw new Error('找不到这篇文章');
 
-  fs.unlinkSync(target);
+  const moved = moveToTrash('posts/' + path.basename(file));
   const build = await run('node', ['build-data.js']);
 
-  sendJson(res, 200, { ok: true, build: build.out + build.err });
+  sendJson(res, 200, {
+    ok: true,
+    trashId: moved.id,
+    message: '已移到回收站，可在「回收站」页签恢复',
+    build: (build.out + build.err).trim(),
+  });
 }
 
 /* ---------- 图片 ---------- */
@@ -257,17 +262,24 @@ async function uploadFile(req, res, url) {
   });
 }
 
-/* 删除 images/ 或 music/ 里的文件，传 src=images/xxx.jpg 这样的相对路径 */
+/* 删除 images/ 或 music/ 里的文件，传 src=images/xxx.jpg 这样的相对路径。
+   同样是挪进回收站，不是真删。 */
 async function deleteFile(res, url) {
   const src = url.searchParams.get('src') || '';
   const target = dirForFile(src);
   if (!target) throw new Error('路径不合法');
 
-  const full = underBase(target.dir, path.basename(src));
+  const base = path.basename(src);
+  const full = underBase(target.dir, base);
   if (!full || !fs.existsSync(full)) throw new Error('找不到这个文件');
 
-  fs.unlinkSync(full);
-  sendJson(res, 200, { ok: true });
+  const moved = moveToTrash(target.prefix + base);
+
+  sendJson(res, 200, {
+    ok: true,
+    trashId: moved.id,
+    message: '已移到回收站，可在「回收站」页签恢复',
+  });
 }
 
 /* ---------- 相册 ---------- */
@@ -365,38 +377,153 @@ async function saveFriends(req, res) {
   sendJson(res, 200, { ok: true, count: clean.length });
 }
 
+/* ---------- 回收站 ---------- */
+/* 删文章 / 删图片不再真删，先挪进 tools/.trash/，随时能捞回来。
+   .trash/ 在 .gitignore 里，不会进仓库。 */
+
+const TRASH_DIR   = path.join(TOOLS, '.trash');
+const TRASH_INDEX = path.join(TRASH_DIR, 'index.json');
+
+function readTrash() {
+  if (!fs.existsSync(TRASH_INDEX)) return [];
+  try {
+    const d = JSON.parse(fs.readFileSync(TRASH_INDEX, 'utf8'));
+    return Array.isArray(d) ? d : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function writeTrash(list) {
+  if (!fs.existsSync(TRASH_DIR)) fs.mkdirSync(TRASH_DIR, { recursive: true });
+  fs.writeFileSync(TRASH_INDEX, JSON.stringify(list, null, 2) + '\n', 'utf8');
+}
+
+/* 把文件挪进回收站。rel 形如 posts/xxx.md 或 images/xxx.jpg */
+function moveToTrash(rel) {
+  const full = path.join(ROOT, rel);
+  if (!fs.existsSync(full)) throw new Error('文件不存在：' + rel);
+
+  if (!fs.existsSync(TRASH_DIR)) fs.mkdirSync(TRASH_DIR, { recursive: true });
+
+  const id = Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+  const kept = id + path.extname(full);
+
+  fs.renameSync(full, path.join(TRASH_DIR, kept));
+
+  const list = readTrash();
+  list.unshift({
+    id:        id,
+    file:      kept,
+    orig:      rel,
+    name:      path.basename(rel),
+    size:      fs.statSync(path.join(TRASH_DIR, kept)).size,
+    deletedAt: Date.now(),
+  });
+  writeTrash(list);
+
+  return { id: id, orig: rel };
+}
+
+function listTrash() {
+  return readTrash().map(function (it) {
+    return Object.assign({}, it, {
+      exists: fs.existsSync(path.join(TRASH_DIR, it.file)),
+    });
+  });
+}
+
+function restoreTrash(id) {
+  const list = readTrash();
+  const i = list.findIndex(x => x.id === id);
+  if (i === -1) throw new Error('回收站里没有这一条');
+
+  const it = list[i];
+  const from = path.join(TRASH_DIR, it.file);
+  const to   = path.join(ROOT, it.orig);
+
+  if (!fs.existsSync(from)) throw new Error('回收站里的文件已经不见了');
+  if (fs.existsSync(to))    throw new Error('原位置已经有同名文件，先处理掉它再恢复');
+
+  const dir = path.dirname(to);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  fs.renameSync(from, to);
+  list.splice(i, 1);
+  writeTrash(list);
+
+  return it;
+}
+
+function purgeTrash(id) {
+  const list = readTrash();
+
+  /* 不带 id 就是清空 */
+  if (!id) {
+    const n = list.length;
+    list.forEach(function (it) {
+      const f = path.join(TRASH_DIR, it.file);
+      if (fs.existsSync(f)) fs.unlinkSync(f);
+    });
+    writeTrash([]);
+    return { cleared: n };
+  }
+
+  const i = list.findIndex(x => x.id === id);
+  if (i === -1) throw new Error('回收站里没有这一条');
+
+  const f = path.join(TRASH_DIR, list[i].file);
+  if (fs.existsSync(f)) fs.unlinkSync(f);
+  list.splice(i, 1);
+  writeTrash(list);
+
+  return { removed: 1 };
+}
+
 /* ---------- 发布 ---------- */
+/* 刻意把「提交」和「推送」拆开：
+   提交只写本地 git 历史，不依赖网络；推送才需要联网。
+   这样断网时改动也不会无处安放。 */
 
 async function gitStatus(res) {
   const st = await run('git', ['status', '--porcelain']);
   const br = await run('git', ['rev-parse', '--abbrev-ref', 'HEAD']);
   const ab = await run('git', ['status', '-sb']);
+  const head = await run('git', ['rev-parse', '--short', 'HEAD']);
+  const up = await run('git', ['rev-parse', '--short', '@{u}']);
 
-  const lines = st.out.split('\n').map(l => l.trim()).filter(Boolean);
+  /* 注意：不能 trim()。git status --porcelain 的格式是 "XY 路径"，
+     前导空格是有意义的，trim 掉会让前端按位置切片时错位、吃掉路径首字符 */
+  const lines = st.out.split('\n').map(l => l.replace(/\s+$/, '')).filter(Boolean);
   const ahead = /ahead (\d+)/.exec(ab.out);
+  const behind = /behind (\d+)/.exec(ab.out);
 
   sendJson(res, 200, {
     ok: st.ok,
     branch: br.out.trim(),
+    head: head.out.trim(),
+    upstream: up.ok ? up.out.trim() : '',
     changes: lines,
     ahead: ahead ? Number(ahead[1]) : 0,
+    behind: behind ? Number(behind[1]) : 0,
+    trash: readTrash().length,
   });
 }
 
-async function publish(req, res) {
+/* 只提交，不推送 */
+async function commitOnly(req, res) {
   const d = await readJson(req);
   const message = String(d.message || '').trim() || 'chore: 更新站点';
 
   const build = await run('node', ['build-data.js']);
-  const add = await run('git', ['add', '-A']);
+  await run('git', ['add', '-A']);
 
   const diff = await run('git', ['diff', '--cached', '--quiet']);
   if (diff.ok) {
     return sendJson(res, 200, {
-      ok: false,
-      step: 'commit',
+      ok: false, step: 'commit',
       message: '没有需要提交的改动',
-      output: build.out + build.err,
+      output: (build.out + build.err).trim(),
     });
   }
 
@@ -404,23 +531,115 @@ async function publish(req, res) {
   if (!commit.ok) {
     return sendJson(res, 500, {
       ok: false, step: 'commit',
-      message: '提交失败', output: (commit.out + commit.err).trim(),
+      message: '提交失败（改动还在工作区，没有丢）',
+      output: (build.out + commit.out + commit.err).trim(),
     });
   }
 
+  const hash = await run('git', ['rev-parse', '--short', 'HEAD']);
+
+  sendJson(res, 200, {
+    ok: true,
+    hash: hash.out.trim(),
+    message: '已提交到本地（' + hash.out.trim() + '），还没推送',
+    output: (build.out + commit.out + commit.err).trim(),
+  });
+}
+
+/* 只推送，不提交 */
+async function pushOnly(res) {
   const push = await run('git', ['push']);
+  const tail = (push.out + push.err).trim();
+
   if (!push.ok) {
+    const net = /Could not connect|unable to access|Failed to connect|timed out|Empty reply|Connection refused/i.test(tail);
+
     return sendJson(res, 500, {
       ok: false, step: 'push',
-      message: '推送失败（可能是凭据或远程有新提交）',
-      output: (push.out + push.err).trim(),
+      message: net
+        ? '推送失败：连不上 GitHub。你的改动已经提交到本地了，没丢；网络恢复后点「重试推送」就行。'
+        : '推送失败：你的改动已经提交到本地了，没丢。下面是 git 的原始输出。',
+      output: tail,
     });
   }
 
   sendJson(res, 200, {
     ok: true,
-    message: '已提交并推送',
-    output: (build.out + commit.out + push.out + push.err).trim(),
+    message: '已推送到 GitHub',
+    output: tail,
+  });
+}
+
+/* 提交 + 推送，一键入口 */
+async function publish(req, res) {
+  const d = await readJson(req);
+  const message = String(d.message || '').trim() || 'chore: 更新站点';
+
+  const build = await run('node', ['build-data.js']);
+  await run('git', ['add', '-A']);
+
+  const diff = await run('git', ['diff', '--cached', '--quiet']);
+  let commitOut = '';
+  let hash = '';
+
+  if (diff.ok) {
+    /* 没有新改动可提交，那就只把已有的本地提交推上去 */
+    const ahead = await run('git', ['rev-list', '--count', '@{u}..HEAD']);
+    if (!ahead.ok || Number(ahead.out.trim()) === 0) {
+      return sendJson(res, 200, {
+        ok: false, step: 'commit',
+        message: '没有需要提交的改动，本地也和云端一致',
+        output: (build.out + build.err).trim(),
+      });
+    }
+  } else {
+    const commit = await run('git', ['commit', '-m', message]);
+    if (!commit.ok) {
+      return sendJson(res, 500, {
+        ok: false, step: 'commit',
+        message: '提交失败（改动还在工作区，没有丢）',
+        output: (build.out + commit.out + commit.err).trim(),
+      });
+    }
+    commitOut = commit.out;
+    const h = await run('git', ['rev-parse', '--short', 'HEAD']);
+    hash = h.out.trim();
+  }
+
+  const push = await run('git', ['push']);
+  const tail = (push.out + push.err).trim();
+
+  if (!push.ok) {
+    const net = /Could not connect|unable to access|Failed to connect|timed out|Empty reply|Connection refused/i.test(tail);
+
+    return sendJson(res, 500, {
+      ok: false, step: 'push',
+      hash: hash,
+      message: '已提交到本地（' + hash + '），但' +
+               (net ? '连不上 GitHub 推不出去。' : '推送被拒绝。') +
+               '改动没丢，网络恢复后到「发布」页点「重试推送」即可。',
+      output: (build.out + commitOut + tail).trim(),
+    });
+  }
+
+  sendJson(res, 200, {
+    ok: true,
+    hash: hash,
+    message: '已提交并推送到 GitHub',
+    output: (build.out + commitOut + tail).trim(),
+  });
+}
+
+/* 放弃本地未提交的改动（危险，前端会二次确认） */
+async function discardChanges(res) {
+  const st = await run('git', ['checkout', '--', '.']);
+
+  sendJson(res, 200, {
+    ok: st.ok,
+    message: st.ok
+      ? '已把「已跟踪文件」恢复到上次提交的样子（新上传但还没提交的文件不会被动）'
+      : '恢复失败',
+    output: (st.out + st.err).trim(),
   });
 }
 
@@ -486,10 +705,37 @@ async function handle(req, res) {
 
     if (p === '/api/build'   && method === 'POST') {
       const r = await run('node', ['build-data.js']);
-      return sendJson(res, 200, { ok: r.ok, output: r.out + r.err });
+      return sendJson(res, 200, { ok: r.ok, output: (r.out + r.err).trim() });
     }
     if (p === '/api/status'  && method === 'GET')    return await gitStatus(res);
+
+    /* --- 发布：提交和推送分开，断网时改动也能先落到本地 --- */
+    if (p === '/api/commit'  && method === 'POST')   return await commitOnly(req, res);
+    if (p === '/api/push'    && method === 'POST')   return await pushOnly(res);
     if (p === '/api/publish' && method === 'POST')   return await publish(req, res);
+    if (p === '/api/discard' && method === 'POST')   return await discardChanges(res);
+
+    /* --- 回收站 --- */
+    if (p === '/api/trash' && method === 'GET') {
+      return sendJson(res, 200, { ok: true, items: listTrash() });
+    }
+    if (p === '/api/trash/restore' && method === 'POST') {
+      const d = await readJson(req);
+      const it = restoreTrash(String(d.id || ''));
+      const build = await run('node', ['build-data.js']);
+      return sendJson(res, 200, {
+        ok: true,
+        restored: it.orig,
+        message: '已恢复到 ' + it.orig,
+        build: (build.out + build.err).trim(),
+      });
+    }
+    if (p === '/api/trash' && method === 'DELETE') {
+      return sendJson(res, 200, {
+        ok: true,
+        result: purgeTrash(url.searchParams.get('id') || ''),
+      });
+    }
 
     sendJson(res, 404, { error: '没有这个接口：' + p });
   } catch (e) {
