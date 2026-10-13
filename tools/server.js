@@ -537,6 +537,16 @@ async function listBackups(res) {
   sendJson(res, 200, { ok: true, items: items });
 }
 
+/* 关掉服务。
+   用 .vbs 启动时是没有控制台窗口的，所以必须留一个能优雅退出的入口，
+   否则只能去任务管理器里杀 node 进程。 */
+function shutdown(res) {
+  sendJson(res, 200, { ok: true, message: '后台服务已关闭，这个窗口可以直接关掉了' });
+
+  /* 等响应真的发出去再退，不然前端会看到「连接被重置」 */
+  setTimeout(() => process.exit(0), 400);
+}
+
 /* ---------- 回收站 ---------- */
 /* 删文章 / 删图片不再真删，先挪进 tools/.trash/，随时能捞回来。
    .trash/ 在 .gitignore 里，不会进仓库。 */
@@ -868,6 +878,7 @@ async function handle(req, res) {
       return sendJson(res, 200, { ok: r.ok, output: (r.out + r.err).trim() });
     }
     if (p === '/api/status'  && method === 'GET')    return await gitStatus(res);
+    if (p === '/api/shutdown'&& method === 'POST')   return shutdown(res);
 
     /* --- 云端核对与同步 --- */
     if (p === '/api/sync'        && method === 'GET')  return await syncCheck(res);

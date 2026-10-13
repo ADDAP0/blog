@@ -633,6 +633,30 @@ button.btn.sm { padding: 5px 11px; font-size: 12.5px; }
   50%      { opacity: .45; transform: scale(.8); }
 }
 
+/* 关闭服务的小按钮 */
+.quit {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all .18s ease;
+}
+
+.quit:hover {
+  color: var(--err);
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
 /* ---------- 云端核对面板 ---------- */
 .sync-panel {
   padding: 15px 18px;

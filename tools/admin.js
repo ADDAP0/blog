@@ -1097,6 +1097,26 @@
     }
   });
 
+  /* 关掉服务。隐藏窗口启动后没有控制台可关，只能靠这个按钮 */
+  $('btnQuit').addEventListener('click', async () => {
+    if (!confirm('关闭后台服务？\n\n关掉之后这个窗口就打不开页面了，\n下次用桌面上的「写作后台」图标重新启动。')) return;
+
+    try {
+      const r = await api('/api/shutdown', { method: 'POST' });
+      document.body.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:center;height:100vh;' +
+        'font-family:-apple-system,\'PingFang SC\',\'Microsoft YaHei\',sans-serif;text-align:center">' +
+        '<div><div style="font-size:44px;margin-bottom:16px">⏻</div>' +
+        '<div style="font-size:17px;font-weight:600;color:#1f2937;margin-bottom:8px">' +
+        esc(r.message || '后台服务已关闭') + '</div>' +
+        '<div style="font-size:13px;color:#6b7280">下次用桌面上的「写作后台」图标重新打开</div>' +
+        '</div></div>';
+    } catch (e) {
+      /* 服务已经退了，连接被断开是正常的，不用报错 */
+      location.reload();
+    }
+  });
+
   /* ===================================================
      启动
      =================================================== */

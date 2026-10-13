@@ -19,3 +19,6 @@ node_modules/
 
 # 写作后台的回收站（删掉的东西先放这儿，不进仓库）
 tools/.trash/
+
+# 后台应用窗口的独立浏览器配置（Edge app 模式生成的，纯本地垃圾）
+tools/.browser-profile/
