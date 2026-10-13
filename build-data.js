@@ -212,6 +212,11 @@ function countPhotos() {
 }
 
 /* ---------- 更新站点统计 ---------- */
+
+/* 首页第三个数「杂谈」算的是生活随笔类文章。
+   想换口径就改这里；留空数组等于永远显示 0。 */
+const ESSAY_CATEGORIES = ['生活', '随笔', '杂谈', '日常'];
+
 function buildStats(posts) {
   const stats = fs.existsSync(STATS_FILE)
     ? JSON.parse(fs.readFileSync(STATS_FILE, 'utf-8'))
@@ -219,10 +224,16 @@ function buildStats(posts) {
 
   stats.articles = posts.length;
   stats.photos   = countPhotos();
+  stats.essays   = posts.filter(p => ESSAY_CATEGORIES.includes((p.category || '').trim())).length;
+
+  /* 早期版本可能没这几个键，补上免得首页显示 undefined */
+  stats.articles = stats.articles || 0;
+  stats.essays   = stats.essays   || 0;
+  stats.photos   = stats.photos   || 0;
 
   ensureDir(STATS_FILE);
   fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2), 'utf-8');
-  console.log(`✅ 已更新 ${STATS_FILE}（文章 ${stats.articles} 篇 / 照片 ${stats.photos} 张）`);
+  console.log(`✅ 已更新 ${STATS_FILE}（文章 ${stats.articles} 篇 / 杂谈 ${stats.essays} 篇 / 照片 ${stats.photos} 张）`);
 }
 
 /* ---------- 工具 ---------- */

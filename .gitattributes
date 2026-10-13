@@ -1,0 +1,39 @@
+# 统一换行符为 LF
+#
+# 为什么需要这个：
+# Windows 上 core.autocrlf=true 会把签出的文本文件变成 CRLF，Linux（GitHub Actions）
+# 上又是 LF。于是 build-data.js 读同一篇文章，生成的 data/content/*.json 内容不同，
+# 结果 Actions 每次跑完都会多出一个「更新数据」提交，本地和云端还会互相冲突。
+#
+# 锁成 LF 之后，两边读到的字节完全一致，这类幽灵提交就不会再出现了。
+
+* text=auto eol=lf
+
+# 明确的文本类型
+*.html  text eol=lf
+*.css   text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.txt   text eol=lf
+
+# 二进制文件，别做任何换行转换
+*.jpg   binary
+*.jpeg  binary
+*.png   binary
+*.gif   binary
+*.webp  binary
+*.avif  binary
+*.ico   binary
+*.svg   text eol=lf
+
+*.mp3   binary
+*.m4a   binary
+*.ogg   binary
+*.wav   binary
+*.flac  binary
+
+# Windows 批处理必须是 CRLF，否则某些命令解析会出问题
+*.bat   text eol=crlf

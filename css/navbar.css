@@ -180,7 +180,9 @@
   border-radius: 2px;
 }
 
-.nav-li.has-dropdown:hover .dropdown {
+/* 鼠标悬停，或者键盘 Tab 进来（:focus-within）都能展开 */
+.nav-li.has-dropdown:hover .dropdown,
+.nav-li.has-dropdown:focus-within .dropdown {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0) scale(1);
@@ -189,6 +191,13 @@
     opacity 0.25s ease,
     transform 0.3s cubic-bezier(0.34, 1.8, 0.64, 1),
     visibility 0s;
+}
+
+/* 展开触发器（原本是 href="#" 的父项）用键盘聚焦时给个可见反馈 */
+.nav-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 9px;
 }
 
 .drop-item {
