@@ -837,7 +837,10 @@
         return;
       }
 
-      if (!auto) loadStatus();
+      /* 核对会 fetch，fetch 会更新 origin/main。
+         所以核完必须统一刷一遍，否则三步条和 gitInfo 还停在 fetch 之前的旧状态，
+         就会出现「顶部条说落后 1 个、下面说已一致」这种自相矛盾。 */
+      loadStatus();
     } catch (e) {
       panel.classList.remove('ok', 'warn');
       panel.classList.add('err');
