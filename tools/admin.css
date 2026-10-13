@@ -657,6 +657,28 @@ button.btn.sm { padding: 5px 11px; font-size: 12.5px; }
   background: #fef2f2;
 }
 
+/* 安装到系统（PWA）*/
+.install {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 13px;
+
+  border: 1px solid var(--accent);
+  border-radius: 99px;
+  background: var(--accent);
+  color: #fff;
+
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all .18s ease;
+}
+
+.install:hover { background: var(--accent-d); border-color: var(--accent-d); }
+
 /* ---------- 云端核对面板 ---------- */
 .sync-panel {
   padding: 15px 18px;

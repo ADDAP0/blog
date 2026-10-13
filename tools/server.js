@@ -838,6 +838,16 @@ async function handle(req, res) {
     /* 复用站点自己的 Markdown 渲染器，保证预览和线上一致 */
     if (p === '/markdown.js') return sendFile(res, path.join(ROOT, 'js', 'markdown.js'), 'text/javascript');
 
+    /* --- PWA ---
+       Service Worker 和 manifest 必须挂在根路径：
+       SW 只能控制它所在目录及以下，放在 /tools/ 下的话 scope 就只有 /tools/，
+       整个应用装不起来。 */
+    if (p === '/manifest.json') return sendFile(res, path.join(TOOLS, 'manifest.json'), 'application/manifest+json');
+    if (p === '/sw.js')         return sendFile(res, path.join(TOOLS, 'sw.js'), 'text/javascript');
+    if (p === '/icon-192.png')      return sendFile(res, path.join(TOOLS, 'icon-192.png'), 'image/png');
+    if (p === '/icon-512.png')      return sendFile(res, path.join(TOOLS, 'icon-512.png'), 'image/png');
+    if (p === '/icon-maskable.png') return sendFile(res, path.join(TOOLS, 'icon-maskable.png'), 'image/png');
+
     /* --- 站内文件（后台预览 / 试听用） ---
        pathname 是编码过的，中文文件名必须先 decode 回来，否则永远找不到 */
     if (p.startsWith('/images/') || p.startsWith('/music/')) {

@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>写作后台 · 米饭多加水の小窝</title>
+
+  <!-- PWA：装进系统之后就是个独立应用，能从开始菜单搜到 -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="icon" type="image/png" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
@@ -11,6 +18,8 @@
   <header class="topbar">
     <div class="brand">米饭多加水の小窝 · <span>写作后台</span></div>
     <div class="spacer"></div>
+    <button class="install" id="btnInstall" type="button" hidden
+            title="把这个后台装进系统，之后能从开始菜单直接打开">⬇ 安装到系统</button>
     <button class="sync" id="syncBar" type="button" title="点这里查看同步状态">
       <span class="sync-dot" id="syncDot"></span>
       <span id="syncText">检查中…</span>

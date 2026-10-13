@@ -1118,6 +1118,46 @@
   });
 
   /* ===================================================
+     PWA：让自己能被「安装」进系统
+     装好之后会出现在开始菜单（能搜到），任务栏也是独立图标
+     =================================================== */
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(function (e) {
+      console.warn('[pwa] Service Worker 注册失败：', e);
+    });
+  }
+
+  let installEvent = null;
+
+  /* 已经是装好之后打开的，就别再显示安装按钮了 */
+  const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+                     window.navigator.standalone === true;
+
+  if (!standalone) {
+    window.addEventListener('beforeinstallprompt', function (e) {
+      /* 把浏览器自己弹的那个小提示拦下来，改由我们在界面上放按钮 */
+      e.preventDefault();
+      installEvent = e;
+      $('btnInstall').hidden = false;
+    });
+
+    window.addEventListener('appinstalled', function () {
+      $('btnInstall').hidden = true;
+      installEvent = null;
+    });
+
+    $('btnInstall').addEventListener('click', async function () {
+      if (!installEvent) return;
+      installEvent.prompt();
+      try {
+        const res = await installEvent.userChoice;
+        if (res && res.outcome === 'accepted') $('btnInstall').hidden = true;
+      } catch (e) { /* 用户直接关掉了，忽略 */ }
+      installEvent = null;
+    });
+  }
+
+  /* ===================================================
      启动
      =================================================== */
   $('f-date').value = todayStr();
