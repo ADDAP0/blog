@@ -1,0 +1,295 @@
+/* ========== 音乐页 ========== */
+.music-page {
+  max-width: 960px;
+}
+
+.music-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ---------- 左：正在播放 ---------- */
+.now-playing {
+  background-color: var(--surface);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--border);
+  box-shadow:
+    var(--shadow-card),
+    inset 0 1px 0 var(--inner-highlight);
+  border-radius: 20px;
+  padding: 26px 24px 24px;
+  text-align: center;
+  animation: fadeUp 0.6s ease both;
+}
+
+.np-cover {
+  width: 190px;
+  height: 190px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  border: 4px solid var(--inner-highlight-strong);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.2);
+  background: var(--surface-solid);
+}
+
+.np-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.np-cover.spinning {
+  animation: npSpin 14s linear infinite;
+}
+
+@keyframes npSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.np-title {
+  font-size: 1.28rem;
+  font-weight: 800;
+  color: var(--text-strong);
+  line-height: 1.4;
+  margin-bottom: 5px;
+}
+
+.np-artist {
+  font-size: 0.84rem;
+  color: var(--text-soft);
+  margin-bottom: 16px;
+}
+
+.np-lyric {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  background: var(--surface-soft);
+
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--text-soft);
+  transition: opacity 0.25s ease;
+}
+
+/* ---------- 进度 ---------- */
+.np-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.np-progress .t {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 38px;
+}
+
+.np-track {
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--tint-2);
+  position: relative;
+  cursor: pointer;
+}
+
+.np-track * { user-select: none; }
+
+.np-played {
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #a5b4fc, #6366f1);
+  position: relative;
+}
+
+.np-played::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* ---------- 控制按钮 ---------- */
+.np-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.np-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--text-icon);
+  transition: all 0.22s ease;
+}
+
+.np-btn .material-symbols-rounded { font-size: 1.6rem; }
+
+.np-btn:hover { background: var(--tint); color: var(--accent); }
+
+.np-btn.main {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #818cf8, #6366f1);
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(99, 102, 241, 0.45);
+}
+
+.np-btn.main .material-symbols-rounded { font-size: 1.9rem; }
+
+.np-btn.main:hover {
+  transform: scale(1.07);
+  color: #fff;
+}
+
+.np-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---------- 右：播放列表 ---------- */
+.playlist {
+  background-color: var(--surface);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--border);
+  box-shadow:
+    var(--shadow-card),
+    inset 0 1px 0 var(--inner-highlight);
+  border-radius: 20px;
+  padding: 18px 16px;
+  animation: fadeUp 0.6s 0.05s ease both;
+}
+
+.pl-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0 8px 12px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.pl-head b {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-strong);
+}
+
+.pl-head .count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.pl-list {
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.pl-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+
+  padding: 11px 12px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.pl-item:hover { background: var(--surface-soft); }
+
+.pl-item.active { background: var(--accent-tint); }
+
+.pl-idx {
+  width: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pl-idx .material-symbols-rounded { font-size: 1.05rem; }
+
+.pl-item.active .pl-idx { color: var(--accent); }
+
+.pl-text { flex: 1; min-width: 0; }
+
+.pl-title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pl-item.active .pl-title { color: var(--accent-strong); }
+
+.pl-artist {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pl-now {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 860px) {
+  .music-layout { grid-template-columns: 1fr; }
+  .np-cover { width: 160px; height: 160px; }
+  .pl-list { max-height: 360px; }
+}

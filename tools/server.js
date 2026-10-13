@@ -16,13 +16,18 @@ const ROOT      = path.resolve(__dirname, '..');
 const TOOLS     = __dirname;
 const POSTS_DIR = path.join(ROOT, 'posts');
 const IMAGES_DIR= path.join(ROOT, 'images');
+const MUSIC_DIR = path.join(ROOT, 'music');
 const DATA_DIR  = path.join(ROOT, 'data');
 const GALLERY   = path.join(DATA_DIR, 'gallery.json');
+const MUSIC     = path.join(DATA_DIR, 'music.json');
+const FRIENDS   = path.join(DATA_DIR, 'friends.json');
 
 const PORT = Number(process.env.PORT) || 4321;
 const HOST = '127.0.0.1';
 
 const IMG_EXT = /\.(jpe?g|png|gif|webp|avif|svg)$/i;
+const AUD_EXT = /\.(mp3|m4a|ogg|wav|flac|aac|opus)$/i;
+const LRC_EXT = /\.lrc$/i;
 
 /* ---------- 小工具 ---------- */
 
@@ -210,38 +215,58 @@ function listImages() {
     .sort((a, b) => b.mtime - a.mtime);
 }
 
-async function uploadImage(req, res, url) {
-  const raw = url.searchParams.get('name') || 'image';
-  let name = path.basename(raw).replace(/[^\w.\u4e00-\u9fa5-]/g, '_');
+/* 按扩展名决定落到哪个目录：图片 → images/，音频和歌词 → music/ */
+function dirForFile(name) {
+  if (IMG_EXT.test(name)) return { dir: IMAGES_DIR, prefix: 'images/' };
+  if (AUD_EXT.test(name) || LRC_EXT.test(name)) return { dir: MUSIC_DIR, prefix: 'music/' };
+  return null;
+}
 
-  if (!IMG_EXT.test(name)) throw new Error('只支持图片格式（jpg / png / gif / webp / avif / svg）');
+async function uploadFile(req, res, url) {
+  const raw = url.searchParams.get('name') || 'file';
+  const name = path.basename(raw).replace(/[^\w.\u4e00-\u9fa5-]/g, '_');
+
+  const target = dirForFile(name);
+  if (!target) {
+    throw new Error('不支持这种格式。图片：jpg / png / gif / webp / avif / svg；' +
+                    '音频：mp3 / m4a / ogg / wav / flac / aac / opus；歌词：lrc');
+  }
 
   const buf = await readBody(req);
   if (!buf.length) throw new Error('文件是空的');
 
-  if (!fs.existsSync(IMAGES_DIR)) fs.mkdirSync(IMAGES_DIR, { recursive: true });
+  if (!fs.existsSync(target.dir)) fs.mkdirSync(target.dir, { recursive: true });
 
-  /* 重名就加序号，绝不覆盖已有图片 */
+  /* 重名就加序号，绝不覆盖已有文件 */
   const ext = path.extname(name);
   const stem = path.basename(name, ext);
   let final = name;
   let n = 1;
-  while (fs.existsSync(path.join(IMAGES_DIR, final))) {
+  while (fs.existsSync(path.join(target.dir, final))) {
     final = stem + '-' + n + ext;
     n++;
   }
 
-  fs.writeFileSync(path.join(IMAGES_DIR, final), buf);
+  fs.writeFileSync(path.join(target.dir, final), buf);
 
-  sendJson(res, 200, { ok: true, name: final, src: 'images/' + final, size: buf.length });
+  sendJson(res, 200, {
+    ok: true,
+    name: final,
+    src: target.prefix + final,
+    size: buf.length,
+  });
 }
 
-async function deleteImage(res, url) {
-  const name = url.searchParams.get('name') || '';
-  const target = underBase(IMAGES_DIR, path.basename(name));
-  if (!target || !fs.existsSync(target)) throw new Error('找不到这张图片');
+/* 删除 images/ 或 music/ 里的文件，传 src=images/xxx.jpg 这样的相对路径 */
+async function deleteFile(res, url) {
+  const src = url.searchParams.get('src') || '';
+  const target = dirForFile(src);
+  if (!target) throw new Error('路径不合法');
 
-  fs.unlinkSync(target);
+  const full = underBase(target.dir, path.basename(src));
+  if (!full || !fs.existsSync(full)) throw new Error('找不到这个文件');
+
+  fs.unlinkSync(full);
   sendJson(res, 200, { ok: true });
 }
 
@@ -275,6 +300,69 @@ async function saveGallery(req, res) {
 
   const build = await run('node', ['build-data.js']);
   sendJson(res, 200, { ok: true, count: clean.length, build: build.out + build.err });
+}
+
+/* ---------- 音乐 / 友链 ---------- */
+/* 这两个都是「整个数组覆盖写」，和相册一个套路 */
+
+/* music/ 目录里现有的音频和歌词，后台用它做下拉选择 */
+function listMusicFiles() {
+  if (!fs.existsSync(MUSIC_DIR)) return { audio: [], lrc: [] };
+  const files = fs.readdirSync(MUSIC_DIR);
+  return {
+    audio: files.filter(f => AUD_EXT.test(f)).map(f => 'music/' + f),
+    lrc:   files.filter(f => LRC_EXT.test(f)).map(f => 'music/' + f),
+  };
+}
+
+function readList(file) {
+  if (!fs.existsSync(file)) return [];
+  try {
+    const d = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return Array.isArray(d) ? d : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function writeList(file, arr) {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(arr, null, 2) + '\n', 'utf8');
+}
+
+async function saveMusic(req, res) {
+  const d = await readJson(req);
+  if (!Array.isArray(d.items)) throw new Error('数据格式不对');
+
+  const clean = d.items
+    .filter(it => it && it.src)
+    .map(it => ({
+      src:    String(it.src),
+      title:  String(it.title || '').trim(),
+      artist: String(it.artist || '').trim(),
+      lrc:    String(it.lrc || '').trim(),
+      cover:  String(it.cover || '').trim(),
+    }));
+
+  writeList(MUSIC, clean);
+  sendJson(res, 200, { ok: true, count: clean.length });
+}
+
+async function saveFriends(req, res) {
+  const d = await readJson(req);
+  if (!Array.isArray(d.items)) throw new Error('数据格式不对');
+
+  const clean = d.items
+    .filter(it => it && it.name && it.url)
+    .map(it => ({
+      name:   String(it.name).trim(),
+      url:    String(it.url).trim(),
+      avatar: String(it.avatar || '').trim(),
+      desc:   String(it.desc || '').trim(),
+    }));
+
+  writeList(FRIENDS, clean);
+  sendJson(res, 200, { ok: true, count: clean.length });
 }
 
 /* ---------- 发布 ---------- */
@@ -343,6 +431,9 @@ const MIME = {
   '.json': 'application/json', '.svg': 'image/svg+xml',
   '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
   '.gif': 'image/gif', '.webp': 'image/webp', '.avif': 'image/avif',
+  '.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.ogg': 'audio/ogg',
+  '.wav': 'audio/wav', '.flac': 'audio/flac', '.aac': 'audio/aac',
+  '.opus': 'audio/opus', '.lrc': 'text/plain',
 };
 
 async function handle(req, res) {
@@ -358,9 +449,14 @@ async function handle(req, res) {
     /* 复用站点自己的 Markdown 渲染器，保证预览和线上一致 */
     if (p === '/markdown.js') return sendFile(res, path.join(ROOT, 'js', 'markdown.js'), 'text/javascript');
 
-    /* --- 站内图片（预览用） --- */
-    if (p.startsWith('/images/')) {
-      const f = underBase(IMAGES_DIR, p.slice('/images/'.length));
+    /* --- 站内文件（后台预览 / 试听用） ---
+       pathname 是编码过的，中文文件名必须先 decode 回来，否则永远找不到 */
+    if (p.startsWith('/images/') || p.startsWith('/music/')) {
+      const isImg = p.startsWith('/images/');
+      const base  = isImg ? IMAGES_DIR : MUSIC_DIR;
+      const rel   = decodeURIComponent(p.slice(isImg ? '/images/'.length : '/music/'.length));
+
+      const f = underBase(base, rel);
       if (!f) { sendJson(res, 400, { error: '路径不合法' }); return; }
       return sendFile(res, f, MIME[path.extname(f).toLowerCase()] || 'application/octet-stream');
     }
@@ -374,11 +470,19 @@ async function handle(req, res) {
     if (p === '/api/post'    && method === 'DELETE') return await deletePost(res, url);
 
     if (p === '/api/images'  && method === 'GET')    return sendJson(res, 200, { ok: true, images: listImages() });
-    if (p === '/api/upload'  && method === 'POST')   return await uploadImage(req, res, url);
-    if (p === '/api/image'   && method === 'DELETE') return await deleteImage(res, url);
+    if (p === '/api/upload'  && method === 'POST')   return await uploadFile(req, res, url);
+    if (p === '/api/file'    && method === 'DELETE') return await deleteFile(res, url);
 
     if (p === '/api/gallery' && method === 'GET')    return sendJson(res, 200, { ok: true, items: getGallery() });
     if (p === '/api/gallery' && method === 'POST')   return await saveGallery(req, res);
+
+    if (p === '/api/music'   && method === 'GET')    return sendJson(res, 200, {
+      ok: true, items: readList(MUSIC), files: listMusicFiles(),
+    });
+    if (p === '/api/music'   && method === 'POST')   return await saveMusic(req, res);
+
+    if (p === '/api/friends' && method === 'GET')    return sendJson(res, 200, { ok: true, items: readList(FRIENDS) });
+    if (p === '/api/friends' && method === 'POST')   return await saveFriends(req, res);
 
     if (p === '/api/build'   && method === 'POST') {
       const r = await run('node', ['build-data.js']);

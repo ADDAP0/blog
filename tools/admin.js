@@ -33,7 +33,14 @@
   const fmtSize = n => n < 1024 ? n + ' B' : (n / 1024).toFixed(0) + ' KB';
 
   /* ---------- 切换页签 ---------- */
-  const LOADERS = { list: loadPosts, album: loadAlbum, images: loadImages, publish: loadStatus };
+  const LOADERS = {
+    list:    loadPosts,
+    album:   loadAlbum,
+    music:   loadMusic,
+    images:  loadImages,
+    friends: loadFriends,
+    publish: loadStatus,
+  };
 
   function showTab(name) {
     document.querySelectorAll('.side button').forEach(b => {
@@ -138,8 +145,8 @@
   /* ===================================================
      图片上传
      =================================================== */
-  async function uploadFiles(files) {
-    const list = Array.from(files).filter(f => f.type.indexOf('image/') === 0);
+  async function uploadFiles(files, accept) {
+    const list = Array.from(files).filter(f => !accept || accept(f));
     if (!list.length) return [];
 
     const done = [];
@@ -157,6 +164,8 @@
     return done;
   }
 
+  const isImage = f => f.type.indexOf('image/') === 0;
+
   /* 写文章页：上传后插入 Markdown */
   $('btnPickImage').addEventListener('click', () => $('filePick').click());
   $('filePick').addEventListener('change', async e => {
@@ -164,7 +173,7 @@
     if (!files || !files.length) return;
 
     msg($('writeMsg'), '上传中…', 'busy');
-    const done = await uploadFiles(files);
+    const done = await uploadFiles(files, isImage);
     e.target.value = '';
 
     if (!done.length) { msg($('writeMsg'), '上传失败', 'err'); return; }
@@ -345,7 +354,7 @@
 
   bindDrop($('albumDrop'), async files => {
     msg($('albumMsg'), '上传中…', 'busy');
-    const done = await uploadFiles(files);
+    const done = await uploadFiles(files, isImage);
     if (!done.length) { msg($('albumMsg'), '上传失败', 'err'); return; }
 
     done.forEach(r => {
@@ -413,7 +422,7 @@
       const name = del.dataset.delimg;
       if (!confirm('确定删除 images/' + name + ' 吗？已经引用它的文章和相册会显示不出来。')) return;
       try {
-        await api('/api/image?name=' + encodeURIComponent(name), { method: 'DELETE' });
+        await api('/api/file?src=' + encodeURIComponent('images/' + name), { method: 'DELETE' });
         loadImages();
       } catch (err) {
         alert('删除失败：' + err.message);
@@ -422,9 +431,253 @@
   });
 
   bindDrop($('imgDrop'), async files => {
-    const done = await uploadFiles(files);
+    const done = await uploadFiles(files, isImage);
     if (done.length) loadImages();
     else alert('没有可上传的图片');
+  });
+
+  /* ===================================================
+     音乐
+     =================================================== */
+  let music = [];
+  let musicFiles = { audio: [], lrc: [] };
+  let imagePool = [];                 // 封面下拉用
+
+  function optionsHtml(list, current, emptyLabel) {
+    const all = list.slice();
+    if (current && all.indexOf(current) === -1) all.unshift(current);
+
+    let html = '<option value="">' + esc(emptyLabel) + '</option>';
+    all.forEach(function (v) {
+      if (!v) return;
+      html += '<option value="' + esc(v) + '"' +
+              (v === current ? ' selected' : '') + '>' + esc(v) + '</option>';
+    });
+    return html;
+  }
+
+  function coverSrc(v) {
+    if (!v) return '';
+    return /^https?:/i.test(v) ? v : '/' + v;
+  }
+
+  function renderMusic() {
+    const box = $('musicList');
+    $('badgeMusic').textContent = music.length;
+
+    if (!music.length) {
+      box.innerHTML = '<div class="empty">播放列表是空的。把音频拖到上面，或点「添加一条」再选文件</div>';
+      return;
+    }
+
+    box.innerHTML = music.map(function (s, i) {
+      return '<div class="music-row">' +
+        '<img src="' + esc(coverSrc(s.cover)) + '" alt="">' +
+        '<div class="fields">' +
+          '<input type="text" data-m="title" data-i="' + i + '" value="' + esc(s.title) + '" placeholder="曲名">' +
+          '<input type="text" data-m="artist" data-i="' + i + '" value="' + esc(s.artist) + '" placeholder="艺术家">' +
+          '<select data-m="src" data-i="' + i + '">' +
+            optionsHtml(musicFiles.audio, s.src, '（选择音频文件）') + '</select>' +
+          '<select data-m="lrc" data-i="' + i + '">' +
+            optionsHtml(musicFiles.lrc, s.lrc, '（无歌词）') + '</select>' +
+          '<select data-m="cover" data-i="' + i + '">' +
+            optionsHtml(imagePool, s.cover, '（无封面）') + '</select>' +
+          (s.src ? '<audio class="preview" controls preload="none" src="/' + esc(s.src) + '"></audio>' : '') +
+        '</div>' +
+        '<div class="ops">' +
+          '<button type="button" data-move="up" data-i="' + i + '" title="上移"' +
+            (i === 0 ? ' disabled' : '') + '>↑</button>' +
+          '<button type="button" data-move="down" data-i="' + i + '" title="下移"' +
+            (i === music.length - 1 ? ' disabled' : '') + '>↓</button>' +
+          '<button type="button" class="del" data-del-music="' + i + '" title="移除">✕</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  async function loadMusic() {
+    try {
+      const [m, im] = await Promise.all([api('/api/music'), api('/api/images')]);
+      music = m.items || [];
+      musicFiles = m.files || { audio: [], lrc: [] };
+      imagePool = (im.images || []).map(x => x.src);
+      renderMusic();
+    } catch (e) {
+      $('musicList').innerHTML = '<div class="empty">加载失败：' + esc(e.message) + '</div>';
+    }
+  }
+
+  $('musicList').addEventListener('input', e => {
+    const el = e.target;
+    if (el.tagName === 'SELECT') return;      // select 走 change
+    const i = Number(el.dataset.i);
+    const key = el.dataset.m;
+    if (!key || isNaN(i) || !music[i]) return;
+    music[i][key] = el.value;
+  });
+
+  $('musicList').addEventListener('change', e => {
+    const el = e.target;
+    if (el.tagName !== 'SELECT') return;
+    const i = Number(el.dataset.i);
+    const key = el.dataset.m;
+    if (!key || isNaN(i) || !music[i]) return;
+
+    music[i][key] = el.value;
+    if (key === 'cover' || key === 'src') renderMusic();   // 封面/音频变了要重绘
+  });
+
+  $('musicList').addEventListener('click', e => {
+    const del = e.target.closest('[data-del-music]');
+    if (del) {
+      music.splice(Number(del.dataset.delMusic), 1);
+      renderMusic();
+      return;
+    }
+
+    const mv = e.target.closest('[data-move]');
+    if (mv) {
+      const i = Number(mv.dataset.i);
+      const to = mv.dataset.move === 'up' ? i - 1 : i + 1;
+      if (to < 0 || to >= music.length) return;
+      const tmp = music[i]; music[i] = music[to]; music[to] = tmp;
+      renderMusic();
+    }
+  });
+
+  $('btnMusicAdd').addEventListener('click', () => {
+    music.push({ src: '', title: '', artist: '', lrc: '', cover: '' });
+    renderMusic();
+  });
+
+  $('btnMusicReload').addEventListener('click', loadMusic);
+
+  $('btnMusicSave').addEventListener('click', async () => {
+    $('btnMusicSave').disabled = true;
+    msg($('musicMsg'), '保存中…', 'busy');
+    try {
+      const r = await api('/api/music', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: music }),
+      });
+      msg($('musicMsg'), '已保存 ' + r.count + ' 首', 'ok');
+      loadMusic();
+    } catch (e) {
+      msg($('musicMsg'), '保存失败：' + e.message, 'err');
+    } finally {
+      $('btnMusicSave').disabled = false;
+    }
+  });
+
+  bindDrop($('musicDrop'), async files => {
+    msg($('musicMsg'), '上传中…', 'busy');
+    const done = await uploadFiles(files);
+    if (!done.length) { msg($('musicMsg'), '上传失败', 'err'); return; }
+
+    /* 音频自动加一条，歌词和封面只是传上去供下拉选择 */
+    let added = 0;
+    done.forEach(function (r) {
+      if (/\.(mp3|m4a|ogg|wav|flac|aac|opus)$/i.test(r.name)) {
+        music.push({
+          src: r.src,
+          title: r.name.replace(/\.[^.]+$/, ''),
+          artist: '',
+          lrc: '',
+          cover: '',
+        });
+        added++;
+      }
+    });
+
+    await loadMusic();
+    msg($('musicMsg'),
+        '上传了 ' + done.length + ' 个文件' + (added ? '，自动新增 ' + added + ' 首' : ''),
+        'ok');
+  });
+
+  /* ===================================================
+     友链
+     =================================================== */
+  let friends = [];
+
+  function renderFriends() {
+    const box = $('friendEditList');
+    $('badgeFriends').textContent = friends.length;
+
+    if (!friends.length) {
+      box.innerHTML = '<div class="empty">还没有友链，点「添加一条」开始</div>';
+      return;
+    }
+
+    box.innerHTML = friends.map(function (f, i) {
+      return '<div class="friend-row">' +
+        '<img src="' + esc(coverSrc(f.avatar)) + '" alt="">' +
+        '<div class="fields">' +
+          '<input type="text" data-f="name" data-i="' + i + '" value="' + esc(f.name) + '" placeholder="站点名称">' +
+          '<input type="text" data-f="url" data-i="' + i + '" value="' + esc(f.url) + '" placeholder="https://example.com">' +
+          '<input type="text" data-f="avatar" data-i="' + i + '" value="' + esc(f.avatar) + '" placeholder="头像：外链，或 images/avatar.jpg">' +
+          '<textarea data-f="desc" data-i="' + i + '" placeholder="一句话介绍">' + esc(f.desc) + '</textarea>' +
+        '</div>' +
+        '<button type="button" class="del" data-del-friend="' + i + '" title="移除">✕</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  async function loadFriends() {
+    try {
+      const r = await api('/api/friends');
+      friends = r.items || [];
+      renderFriends();
+    } catch (e) {
+      $('friendEditList').innerHTML = '<div class="empty">加载失败：' + esc(e.message) + '</div>';
+    }
+  }
+
+  $('friendEditList').addEventListener('input', e => {
+    const el = e.target;
+    const i = Number(el.dataset.i);
+    const key = el.dataset.f;
+    if (!key || isNaN(i) || !friends[i]) return;
+    friends[i][key] = el.value;
+  });
+
+  $('friendEditList').addEventListener('change', e => {
+    const el = e.target;
+    if (el.dataset.f !== 'avatar') return;
+    renderFriends();
+  });
+
+  $('friendEditList').addEventListener('click', e => {
+    const del = e.target.closest('[data-del-friend]');
+    if (!del) return;
+    friends.splice(Number(del.dataset.delFriend), 1);
+    renderFriends();
+  });
+
+  $('btnFriendAdd').addEventListener('click', () => {
+    friends.push({ name: '', url: 'https://', avatar: '', desc: '' });
+    renderFriends();
+  });
+
+  $('btnFriendReload').addEventListener('click', loadFriends);
+
+  $('btnFriendSave').addEventListener('click', async () => {
+    $('btnFriendSave').disabled = true;
+    msg($('friendMsg'), '保存中…', 'busy');
+    try {
+      const r = await api('/api/friends', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: friends }),
+      });
+      msg($('friendMsg'), '已保存 ' + r.count + ' 条', 'ok');
+      loadFriends();
+    } catch (e) {
+      msg($('friendMsg'), '保存失败：' + e.message, 'err');
+    } finally {
+      $('btnFriendSave').disabled = false;
+    }
   });
 
   /* ===================================================
@@ -495,19 +748,22 @@
   loadCats();
 
   /* 支持用 #list / #album 这样的锚点直接打开某个页签 */
-  const TABS = ['write', 'list', 'album', 'images', 'publish'];
+  const TABS = ['write', 'list', 'album', 'music', 'images', 'friends', 'publish'];
   const hash = (location.hash || '').replace(/^#/, '');
   if (TABS.indexOf(hash) !== -1) showTab(hash);
 
   /* 侧栏计数先填上，不用等切页签 */
   (async function initBadges() {
     try {
-      const [p, g, im] = await Promise.all([
-        api('/api/posts'), api('/api/gallery'), api('/api/images'),
+      const [p, g, m, im, fr] = await Promise.all([
+        api('/api/posts'), api('/api/gallery'), api('/api/music'),
+        api('/api/images'), api('/api/friends'),
       ]);
-      $('badgePosts').textContent  = p.posts.length;
-      $('badgeAlbum').textContent  = g.items.length;
-      $('badgeImages').textContent = im.images.length;
+      $('badgePosts').textContent   = p.posts.length;
+      $('badgeAlbum').textContent   = g.items.length;
+      $('badgeMusic').textContent   = m.items.length;
+      $('badgeImages').textContent  = im.images.length;
+      $('badgeFriends').textContent = fr.items.length;
     } catch (e) { /* 拿不到就先空着 */ }
   })();
 })();

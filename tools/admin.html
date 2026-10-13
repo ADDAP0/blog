@@ -20,7 +20,9 @@
       <button data-tab="write" class="active"><span class="ico">✍️</span>写文章</button>
       <button data-tab="list"><span class="ico">📄</span>文章列表<span class="badge" id="badgePosts">0</span></button>
       <button data-tab="album"><span class="ico">🖼️</span>相册<span class="badge" id="badgeAlbum">0</span></button>
+      <button data-tab="music"><span class="ico">🎵</span>音乐<span class="badge" id="badgeMusic">0</span></button>
       <button data-tab="images"><span class="ico">📁</span>图片库<span class="badge" id="badgeImages">0</span></button>
+      <button data-tab="friends"><span class="ico">🔗</span>友链<span class="badge" id="badgeFriends">0</span></button>
       <button data-tab="publish"><span class="ico">🚀</span>发布</button>
     </nav>
 
@@ -136,6 +138,47 @@
 
         <div class="grid" id="imageGrid" style="margin-top:16px">
           <div class="empty">加载中…</div>
+        </div>
+      </section>
+
+      <!-- ========== 音乐 ========== -->
+      <section class="tab" id="tab-music">
+        <h2 class="page-title">音乐</h2>
+        <p class="page-hint">
+          这里决定首页音乐卡和播放列表页放什么。音频和歌词都进 <code>music/</code>，封面走 <code>images/</code>。
+        </p>
+
+        <div class="drop" id="musicDrop">
+          <b>把音频或歌词拖到这里</b>
+          支持 mp3 / m4a / ogg / wav / flac / aac / opus 和 lrc，也可以点击选择、一次多选
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div id="musicList"><div class="empty">加载中…</div></div>
+          <div class="actions" style="margin-top:16px">
+            <button class="btn" id="btnMusicAdd">＋ 添加一条</button>
+            <button class="btn primary" id="btnMusicSave">💾 保存播放列表</button>
+            <button class="btn" id="btnMusicReload">↻ 重新载入</button>
+            <span class="msg" id="musicMsg"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== 友链 ========== -->
+      <section class="tab" id="tab-friends">
+        <h2 class="page-title">友情链接</h2>
+        <p class="page-hint">
+          对应站点上的「链接 → 友情链接」页面。头像可以填外链，也可以用 <code>images/</code> 里的图。
+        </p>
+
+        <div class="card">
+          <div id="friendEditList"><div class="empty">加载中…</div></div>
+          <div class="actions" style="margin-top:16px">
+            <button class="btn" id="btnFriendAdd">＋ 添加一条</button>
+            <button class="btn primary" id="btnFriendSave">💾 保存</button>
+            <button class="btn" id="btnFriendReload">↻ 重新载入</button>
+            <span class="msg" id="friendMsg"></span>
+          </div>
         </div>
       </section>
 

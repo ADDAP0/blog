@@ -112,7 +112,35 @@
 }
 
 /* ========== 音乐卡 ========== */
-.music-card { padding: 22px 24px; display: flex; flex-direction: column; }
+.music-card {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+
+  /* 点卡片空白处可以进播放列表页（点控件不跳） */
+  position: relative;
+  cursor: pointer;
+}
+
+/* 悬停时提示可以点进去 */
+.music-card::after {
+  content: '播放列表 →';
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-faint);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.25s ease;
+  pointer-events: none;
+}
+
+.music-card:hover::after {
+  opacity: 1;
+  transform: translateX(0);
+}
 
 .music-top {
   display: flex;
