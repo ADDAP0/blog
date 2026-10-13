@@ -731,6 +731,160 @@
   const afterWrite = () => refreshSync();
 
   /* ===================================================
+     云端核对
+     =================================================== */
+  function paintSyncPanel(r) {
+    const panel = $('syncPanel');
+    const ico   = $('syncPanelIco');
+    const title = $('syncPanelTitle');
+    const text  = $('syncPanelText');
+    const btnPull  = $('btnSyncPull');
+    const btnForce = $('btnSyncForce');
+
+    panel.classList.remove('ok', 'warn', 'err');
+    btnPull.hidden = true;
+    btnForce.hidden = true;
+
+    /* 连不上云端 —— 最要紧的是别撒谎说"已一致" */
+    if (!r.fetched) {
+      panel.classList.add('err');
+      ico.textContent = '📡';
+      title.textContent = '连不上云端，这次没核对上';
+      text.textContent = '到 GitHub 的网络不通：' + r.fetchError +
+        '\n下方显示的「云端 ' + r.remote + '」是上一次成功同步时的记录，不一定是最新的。';
+      return;
+    }
+
+    if (r.inSync) {
+      panel.classList.add('ok');
+      ico.textContent = '✅';
+      title.textContent = '已核对：本地和云端完全一致';
+      text.textContent = '本地 ' + r.head + ' = 云端 ' + r.remote + '，没有待处理的东西。';
+      return;
+    }
+
+    /* 本地干净 + 云端领先 = 可以安全地用云端覆盖，这是你要的自动同步 */
+    if (r.canFastForward) {
+      panel.classList.add('warn');
+      ico.textContent = '⬇️';
+      title.textContent = '云端有 ' + r.behind + ' 个新提交';
+      text.textContent = '本地很干净，同步不会丢任何东西。';
+      btnPull.hidden = false;
+      return;
+    }
+
+    /* 本地领先 */
+    if (r.ahead > 0 && r.behind === 0) {
+      panel.classList.add('warn');
+      ico.textContent = '⬆️';
+      title.textContent = '本地有 ' + r.ahead + ' 个提交没推上去';
+      text.textContent = '本地比云端新，不需要同步。去上面点「只推送」就行。';
+      return;
+    }
+
+    /* 分叉 */
+    if (r.ahead > 0 && r.behind > 0) {
+      panel.classList.add('err');
+      ico.textContent = '⚠️';
+      title.textContent = '本地和云端分叉了';
+      text.textContent = '本地领先 ' + r.ahead + ' 个提交、落后 ' + r.behind + ' 个提交。' +
+        '\n两边都有对方没有的内容，直接覆盖必定丢掉一边。想清楚再动。';
+      btnForce.hidden = false;
+      return;
+    }
+
+    /* 有未提交改动 */
+    if (r.dirty) {
+      panel.classList.add('warn');
+      ico.textContent = '✏️';
+      title.textContent = '有 ' + r.dirty + ' 处改动没提交';
+      text.textContent = r.behind
+        ? '本地有没提交的改动，云端又领先 ' + r.behind + ' 个提交。\n要把云端拉下来就会覆盖这些改动，所以先提交或放弃它们。'
+        : '本地有没提交的改动，云端没有新东西。';
+      if (r.behind) btnForce.hidden = false;
+      return;
+    }
+
+    panel.classList.add('warn');
+    ico.textContent = '❔';
+    title.textContent = '状态不明';
+    text.textContent = '领先 ' + r.ahead + ' / 落后 ' + r.behind + ' / 未提交 ' + r.dirty;
+  }
+
+  async function checkCloud(auto) {
+    const panel = $('syncPanel');
+
+    $('syncPanelIco').textContent = '⏳';
+    $('syncPanelTitle').textContent = '正在核对云端…';
+    $('syncPanelText').textContent = '正在连接 GitHub，网络慢的话要等十几秒';
+    panel.classList.remove('ok', 'warn', 'err');
+
+    try {
+      const r = await api('/api/sync');
+      paintSyncPanel(r);
+
+      /* 本地干净 + 云端领先 —— 按你的要求直接拉下来，不打扰你 */
+      if (auto && r.canFastForward) {
+        $('syncPanelTitle').textContent = '云端有 ' + r.behind + ' 个新提交，正在自动同步…';
+        const p = await api('/api/sync/pull', { method: 'POST' });
+        msg($('publishMsg'), p.message, p.ok ? 'ok' : 'err');
+        await checkCloud(false);
+        loadStatus();
+        return;
+      }
+
+      if (!auto) loadStatus();
+    } catch (e) {
+      panel.classList.remove('ok', 'warn');
+      panel.classList.add('err');
+      $('syncPanelIco').textContent = '❌';
+      $('syncPanelTitle').textContent = '核对失败';
+      $('syncPanelText').textContent = e.message;
+    }
+  }
+
+  $('btnSyncCheck').addEventListener('click', () => checkCloud(false));
+
+  $('btnSyncPull').addEventListener('click', async () => {
+    $('btnSyncPull').disabled = true;
+    msg($('publishMsg'), '同步中…', 'busy');
+    try {
+      const p = await api('/api/sync/pull', { method: 'POST' });
+      msg($('publishMsg'), p.message, p.ok ? 'ok' : 'err');
+    } catch (e) {
+      msg($('publishMsg'), '失败：' + e.message, 'err');
+    } finally {
+      $('btnSyncPull').disabled = false;
+      await checkCloud(false);
+      loadStatus();
+    }
+  });
+
+  $('btnSyncForce').addEventListener('click', async () => {
+    const yes = confirm(
+      '用云端覆盖本地？\n\n' +
+      '会丢掉本地所有没推上去的东西（包括没提交的改动）。\n' +
+      '覆盖前会自动建一个备份分支，出事能捞回来，但那不是常规操作。\n\n' +
+      '确定继续吗？'
+    );
+    if (!yes) return;
+
+    $('btnSyncForce').disabled = true;
+    msg($('publishMsg'), '正在用云端覆盖本地…', 'busy');
+    try {
+      const p = await api('/api/sync/force', { method: 'POST' });
+      msg($('publishMsg'), p.message, p.ok ? 'ok' : 'err');
+      $('publishOut').textContent = p.output || '';
+    } catch (e) {
+      msg($('publishMsg'), '失败：' + e.message, 'err');
+    } finally {
+      $('btnSyncForce').disabled = false;
+      await checkCloud(false);
+      loadStatus();
+    }
+  });
+
+  /* ===================================================
      发布
      =================================================== */
   function paintSteps(r) {
@@ -953,5 +1107,8 @@
   })();
 
   refreshSync();
-  setInterval(refreshSync, 20000);   // 每 20 秒看一眼同步状态
+  setInterval(refreshSync, 20000);   // 每 20 秒看一眼本地状态
+
+  /* 打开后台就核对一次云端；本地干净的话顺手同步下来 */
+  checkCloud(true);
 })();

@@ -377,6 +377,166 @@ async function saveFriends(req, res) {
   sendJson(res, 200, { ok: true, count: clean.length });
 }
 
+/* ---------- 云端核对 ---------- */
+/* fetch 只更新远程引用，不动工作区，所以它本身是安全的。
+   但 fetch 会失败（网络问题）。这时必须如实说「没核对上」，
+   绝不能拿上一次的缓存冒充「云端最新」——那会给出一个假的「已一致」。 */
+
+const UPSTREAM_FALLBACK = 'origin/main';
+
+async function upstreamRef() {
+  const u = await run('git', ['rev-parse', '--abbrev-ref', '@{u}']);
+  return u.ok && u.out.trim() ? u.out.trim() : UPSTREAM_FALLBACK;
+}
+
+async function dirtyList() {
+  const st = await run('git', ['status', '--porcelain']);
+  return st.out.split('\n').map(l => l.replace(/\s+$/, '')).filter(Boolean);
+}
+
+async function countRevs(range) {
+  const r = await run('git', ['rev-list', '--count', range]);
+  return r.ok ? Number(r.out.trim() || 0) : 0;
+}
+
+async function syncCheck(res) {
+  const up = await upstreamRef();
+
+  const fetchRes = await run('git', ['fetch', '--prune', 'origin'], { timeout: 25000 });
+  const fetched = fetchRes.ok;
+
+  const dirty  = await dirtyList();
+  const ahead  = await countRevs(up + '..HEAD');
+  const behind = await countRevs('HEAD..' + up);
+
+  const head   = (await run('git', ['rev-parse', '--short', 'HEAD'])).out.trim();
+  const remote = (await run('git', ['rev-parse', '--short', up])).out.trim();
+
+  /* 能安全快进的条件：真的连上了、工作区干净、本地没有领先提交、云端确实有新东西 */
+  const canFastForward = fetched && dirty.length === 0 && ahead === 0 && behind > 0;
+
+  let fetchError = '';
+  if (!fetched) {
+    fetchError = (fetchRes.err || fetchRes.out).trim().split('\n').filter(Boolean)[0] || '未知网络错误';
+  }
+
+  sendJson(res, 200, {
+    ok: true,
+    fetched: fetched,
+    fetchError: fetchError,
+    branch: (await run('git', ['rev-parse', '--abbrev-ref', 'HEAD'])).out.trim(),
+    upstream: up,
+    head: head,
+    remote: remote,
+    dirty: dirty.length,
+    changes: dirty,
+    ahead: ahead,
+    behind: behind,
+    canFastForward: canFastForward,
+    /* 「已一致」只在真的核对过、且三项都为 0 时才算数 */
+    inSync: fetched && ahead === 0 && behind === 0 && dirty.length === 0,
+  });
+}
+
+/* 安全快进：只在本地没有任何会丢失的东西时用 */
+async function syncPull(res) {
+  const up = await upstreamRef();
+  const dirty = await dirtyList();
+
+  if (dirty.length) {
+    return sendJson(res, 200, {
+      ok: false,
+      reason: 'dirty',
+      message: '本地还有 ' + dirty.length + ' 处改动没提交。直接同步会把它们覆盖掉，' +
+               '先去「发布」页提交，或点「放弃未提交的改动」。',
+    });
+  }
+
+  const ahead = await countRevs(up + '..HEAD');
+  if (ahead > 0) {
+    return sendJson(res, 200, {
+      ok: false,
+      reason: 'ahead',
+      message: '本地有 ' + ahead + ' 个提交还没推送。直接拉云端会让两边分叉，先去「发布」页推送。',
+    });
+  }
+
+  const r = await run('git', ['merge', '--ff-only', up]);
+  const head = (await run('git', ['rev-parse', '--short', 'HEAD'])).out.trim();
+  const build = await run('node', ['build-data.js']);
+
+  sendJson(res, 200, {
+    ok: r.ok,
+    head: head,
+    message: r.ok
+      ? '已同步到云端最新（' + head + '）'
+      : '同步失败：' + ((r.err || r.out).trim().split('\n').filter(Boolean)[0] || '未知原因'),
+    output: (r.out + r.err + build.out + build.err).trim(),
+  });
+}
+
+/* 用云端覆盖本地。不可逆，所以先确认连得上、再打备份分支、再把未提交改动塞进 stash。
+   顺序很重要：连不上就什么都别碰，否则 stash 会把工作区清空却拿不到云端数据。 */
+async function syncForce(req, res) {
+  const up = await upstreamRef();
+
+  /* 第 0 步：先确认真的连得上。连不上就立刻退出，一个字节都不动 */
+  const fetchRes = await run('git', ['fetch', 'origin'], { timeout: 25000 });
+  if (!fetchRes.ok) {
+    return sendJson(res, 200, {
+      ok: false,
+      reason: 'offline',
+      message: '连不上 GitHub，没法拿云端数据覆盖。你的本地文件一点都没动。',
+    });
+  }
+
+  const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+  const bak = 'backup/' + stamp;
+
+  /* 第 1 步：备份当前 HEAD */
+  let backedUp = false;
+  const hasHead = (await run('git', ['rev-parse', '--verify', 'HEAD'])).ok;
+  if (hasHead) backedUp = (await run('git', ['branch', bak])).ok;
+
+  /* 第 2 步：未提交的改动也存起来，好让 reset --hard 不把它们抹掉 */
+  const dirty = await dirtyList();
+  let stashed = false;
+  if (dirty.length) {
+    const s = await run('git', ['stash', 'push', '-u', '-m', '后台覆盖前的自动备份 ' + stamp]);
+    stashed = s.ok;
+  }
+
+  /* 第 3 步：覆盖 */
+  const r = await run('git', ['reset', '--hard', up]);
+  const head = (await run('git', ['rev-parse', '--short', 'HEAD'])).out.trim();
+  const build = await run('node', ['build-data.js']);
+
+  sendJson(res, 200, {
+    ok: r.ok,
+    head: head,
+    backupBranch: backedUp ? bak : '',
+    stashed: stashed,
+    message: r.ok
+      ? '已用云端覆盖本地，现在停在 ' + head +
+        (backedUp ? '。覆盖前的状态备份在分支 ' + bak + '，不需要了可以删掉' : '') +
+        (stashed ? '；未提交的改动也一起存进 stash 了' : '')
+      : '覆盖失败：' + ((r.err || r.out).trim().split('\n').filter(Boolean)[0] || '未知原因'),
+    output: (r.out + r.err + build.out + build.err).trim(),
+  });
+}
+
+/* 备份分支列表（覆盖前自动建的，能拿来救急） */
+async function listBackups(res) {
+  const r = await run('git', ['branch', '--list', 'backup/*', '--format=%(refname:short)|%(committerdate:format:%Y-%m-%d %H:%M)']);
+
+  const items = r.out.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const parts = l.split('|');
+    return { name: parts[0], date: parts[1] || '' };
+  });
+
+  sendJson(res, 200, { ok: true, items: items });
+}
+
 /* ---------- 回收站 ---------- */
 /* 删文章 / 删图片不再真删，先挪进 tools/.trash/，随时能捞回来。
    .trash/ 在 .gitignore 里，不会进仓库。 */
@@ -708,6 +868,12 @@ async function handle(req, res) {
       return sendJson(res, 200, { ok: r.ok, output: (r.out + r.err).trim() });
     }
     if (p === '/api/status'  && method === 'GET')    return await gitStatus(res);
+
+    /* --- 云端核对与同步 --- */
+    if (p === '/api/sync'        && method === 'GET')  return await syncCheck(res);
+    if (p === '/api/sync/pull'   && method === 'POST') return await syncPull(res);
+    if (p === '/api/sync/force'  && method === 'POST') return await syncForce(req, res);
+    if (p === '/api/sync/backups'&& method === 'GET')  return await listBackups(res);
 
     /* --- 发布：提交和推送分开，断网时改动也能先落到本地 --- */
     if (p === '/api/commit'  && method === 'POST')   return await commitOnly(req, res);

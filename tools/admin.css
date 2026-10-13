@@ -630,6 +630,51 @@ button.btn.sm { padding: 5px 11px; font-size: 12.5px; }
   50%      { opacity: .45; transform: scale(.8); }
 }
 
+/* ---------- 云端核对面板 ---------- */
+.sync-panel {
+  padding: 15px 18px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.sync-panel .head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.sync-panel .head .ico { font-size: 16px; }
+
+.sync-panel .head b {
+  font-size: 14px;
+  color: var(--strong);
+}
+
+.sync-panel p {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+}
+
+.sync-panel .actions { gap: 8px; }
+.sync-panel .actions:empty { display: none; }
+
+.sync-panel.ok   { border-left-color: var(--ok); background: #f6fefb; }
+.sync-panel.ok .head b { color: #047857; }
+
+.sync-panel.warn { border-left-color: var(--warn); background: #fffdf5; }
+.sync-panel.warn .head b { color: #92400e; }
+
+.sync-panel.err  { border-left-color: var(--err); background: #fffafa; }
+.sync-panel.err .head b { color: #991b1b; }
+
 /* ---------- 发布步骤条 ---------- */
 .steps {
   display: flex;

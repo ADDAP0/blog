@@ -212,6 +212,19 @@
           所以断网也不会让你的改动丢失：先提交，等网络好了再推。
         </p>
 
+        <div class="sync-panel" id="syncPanel">
+          <div class="head">
+            <span class="ico" id="syncPanelIco">☁️</span>
+            <b id="syncPanelTitle">正在核对云端…</b>
+          </div>
+          <p id="syncPanelText"></p>
+          <div class="actions">
+            <button class="btn sm" id="btnSyncCheck">🔄 重新核对</button>
+            <button class="btn sm primary" id="btnSyncPull" hidden>⬇️ 同步云端最新</button>
+            <button class="btn sm danger" id="btnSyncForce" hidden>⚠️ 用云端覆盖本地</button>
+          </div>
+        </div>
+
         <div class="steps">
           <div class="step" id="stepLocal">
             <i>①</i><b>本地改动</b><span>—</span>
