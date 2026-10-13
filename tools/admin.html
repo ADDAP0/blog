@@ -44,6 +44,7 @@
       <button data-tab="images"><span class="ico">📁</span>图片库<span class="badge" id="badgeImages">0</span></button>
       <button data-tab="friends"><span class="ico">🔗</span>友链<span class="badge" id="badgeFriends">0</span></button>
       <button data-tab="trash"><span class="ico">🗑️</span>回收站<span class="badge" id="badgeTrash">0</span></button>
+      <button data-tab="backup"><span class="ico">🛡️</span>备份</button>
       <button data-tab="publish"><span class="ico">🚀</span>发布</button>
     </nav>
 
@@ -217,6 +218,69 @@
             <button class="btn danger" id="btnTrashClear">清空回收站</button>
             <span class="msg" id="trashMsg"></span>
           </div>
+        </div>
+      </section>
+
+      <!-- ========== 备份 ========== -->
+      <section class="tab" id="tab-backup">
+        <h2 class="page-title">备份与恢复</h2>
+        <p class="page-hint">
+          这里告诉你三件事：东西存在哪、云端有没有备份、万一本地全没了怎么拿回来。
+        </p>
+
+        <div class="backup-hero" id="backupHero">
+          <div class="bh-icon" id="bhIcon">⏳</div>
+          <div class="bh-text">
+            <b id="bhTitle">正在检查…</b>
+            <span id="bhSub"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">你的东西都在这个文件夹里</h3>
+          <div class="path-box">
+            <code id="backupRoot">读取中…</code>
+            <button class="btn sm" id="btnOpenFolder">📂 打开文件夹</button>
+          </div>
+          <div class="bk-grid" id="bkGrid"></div>
+          <p class="page-hint" style="margin:12px 0 0">
+            把这个文件夹整个复制到 U 盘或网盘，就是一份完整备份 —— 不需要任何额外操作。
+          </p>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">万一本地全没了（连代码都没了）</h3>
+          <ol class="todo-list">
+            <li>
+              <b>1. 装 Node.js</b>
+              <span>去 nodejs.org 下载 LTS 版，一路下一步即可</span>
+            </li>
+            <li>
+              <b>2. 把仓库拉回来</b>
+              <span>随便找个文件夹，打开终端跑这一行：</span>
+              <div class="cmd-row">
+                <code id="cloneCmd">git clone https://github.com/ADDAP0/blog.git</code>
+                <button class="btn sm" id="btnCopyClone">复制</button>
+              </div>
+            </li>
+            <li>
+              <b>3. 打开写作后台</b>
+              <span>双击 <code>tools\启动后台.vbs</code>。桌面图标没了就跑一次 <code>tools\安装快捷方式.ps1</code></span>
+            </li>
+          </ol>
+          <p class="page-hint" style="margin:0">
+            文章、图片、音乐、站点代码、这个写作后台本身，全都在仓库里。
+            拉回来就是完整的一份，不用重新配任何东西。
+          </p>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">想再多一份保险</h3>
+          <ul class="tip-list">
+            <li><b>GitHub 本身就是异地备份</b>，而且带完整历史，删错了也能翻回来</li>
+            <li>想更踏实的话，把项目文件夹复制一份到移动硬盘 —— 离线、不依赖网络</li>
+            <li>或者在 GitHub 仓库页面点 <code>Code → Download ZIP</code>，存一份快照</li>
+          </ul>
         </div>
       </section>
 

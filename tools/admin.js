@@ -40,6 +40,7 @@
     images:  loadImages,
     friends: loadFriends,
     trash:   loadTrash,
+    backup:  loadBackup,
     publish: loadStatus,
   };
 
@@ -1158,6 +1159,80 @@
   }
 
   /* ===================================================
+     备份与恢复
+     =================================================== */
+  const DIR_NAMES = {
+    posts: '文章', data: '站点数据', images: '图片', music: '音乐',
+    js: '脚本', css: '样式', pages: '页面', tools: '写作后台',
+  };
+
+  async function loadBackup() {
+    const hero = $('backupHero');
+
+    try {
+      const r = await api('/api/backup');
+
+      $('backupRoot').textContent = r.root;
+      hero.classList.remove('ok', 'warn', 'err');
+
+      if (r.safe) {
+        hero.classList.add('ok');
+        $('bhIcon').textContent = '✅';
+        $('bhTitle').textContent = '安全：所有内容在云端都有备份';
+        $('bhSub').textContent = r.contentCount + ' 个文件都在 GitHub 上，' +
+                                 '这台电脑全丢了也能完整拿回来。';
+      } else {
+        hero.classList.add('warn');
+        $('bhIcon').textContent = '⚠️';
+
+        const bits = [];
+        if (r.untracked) bits.push(r.untracked + ' 个文件还没进 git');
+        if (r.ahead)     bits.push(r.ahead + ' 个提交没推送');
+        if (r.dirty)     bits.push(r.dirty + ' 处改动没提交');
+
+        $('bhTitle').textContent = '还没完全同步：' + bits.join('、');
+        $('bhSub').textContent = '这些内容目前只在这台电脑上。去「发布」页推一下，' +
+                                 '它们才会进 GitHub 的备份。';
+      }
+
+      $('bkGrid').innerHTML = r.sections.map(function (s) {
+        return '<div class="bk-item">' +
+          '<div class="n">' + esc(DIR_NAMES[s.name] || s.name) +
+            ' <span style="color:var(--muted);font-weight:400">' + esc(s.name) + '/</span></div>' +
+          '<div class="s">' + s.count + ' 个文件 · ' + fmtSize(s.size) + '</div>' +
+          (s.untracked ? '<div class="w">⚠ ' + s.untracked + ' 个还没进 git</div>' : '') +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      hero.classList.remove('ok', 'warn');
+      hero.classList.add('err');
+      $('bhIcon').textContent = '❌';
+      $('bhTitle').textContent = '检查失败';
+      $('bhSub').textContent = e.message;
+    }
+  }
+
+  $('btnOpenFolder').addEventListener('click', async function () {
+    try {
+      await api('/api/open-folder', { method: 'POST' });
+    } catch (e) {
+      alert('打不开文件夹：' + e.message);
+    }
+  });
+
+  $('btnCopyClone').addEventListener('click', async function () {
+    const btn = $('btnCopyClone');
+    const text = $('cloneCmd').textContent.trim();
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = '已复制';
+      setTimeout(function () { btn.textContent = '复制'; }, 1200);
+    } catch (e) {
+      prompt('复制这一行：', text);
+    }
+  });
+
+  /* ===================================================
      启动
      =================================================== */
   $('f-date').value = todayStr();
@@ -1165,7 +1240,7 @@
   loadCats();
 
   /* 支持用 #list / #album 这样的锚点直接打开某个页签 */
-  const TABS = ['write', 'list', 'album', 'music', 'images', 'friends', 'trash', 'publish'];
+  const TABS = ['write', 'list', 'album', 'music', 'images', 'friends', 'trash', 'backup', 'publish'];
   const hash = (location.hash || '').replace(/^#/, '');
   if (TABS.indexOf(hash) !== -1) showTab(hash);
 

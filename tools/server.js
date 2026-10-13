@@ -547,6 +547,109 @@ function shutdown(res) {
   setTimeout(() => process.exit(0), 400);
 }
 
+/* ---------- 备份与恢复 ---------- */
+
+/* 把这些目录里的一切都算作「你的内容」 */
+const CONTENT_DIRS = ['posts', 'data', 'images', 'music', 'js', 'css', 'pages', 'tools'];
+
+/* 这些是纯本地的缓存/临时目录，不算「你的内容」，统计时要跳过 */
+function isJunk(rel) {
+  return rel.startsWith('tools/.browser-profile') ||
+         rel.startsWith('tools/.trash') ||
+         rel.startsWith('tools/.icon-');
+}
+
+function dirSize(dir) {
+  let total = 0, count = 0;
+  if (!fs.existsSync(dir)) return { size: 0, count: 0 };
+
+  (function walk(d) {
+    for (const f of fs.readdirSync(d)) {
+      const p = path.join(d, f);
+      const rel = path.relative(ROOT, p).replace(/\\/g, '/');
+      if (isJunk(rel)) continue;
+
+      let st;
+      try { st = fs.statSync(p); } catch (e) { continue; }
+      if (st.isDirectory()) { walk(p); continue; }
+      total += st.size;
+      count++;
+    }
+  })(dir);
+
+  return { size: total, count: count };
+}
+
+async function backupInfo(res) {
+  const up = await upstreamRef();
+
+  /* 哪些文件已经被 git 跟踪（有云端备份），哪些没有 */
+  const ls = await run('git', ['-c', 'core.quotepath=false', 'ls-files']);
+  const tracked = new Set(ls.out.split('\n').filter(Boolean));
+
+  const sections = CONTENT_DIRS.map(function (d) {
+    const full = path.join(ROOT, d);
+    const { size, count } = dirSize(full);
+
+    /* 这一块里有多少文件是 git 不知道的（排除纯本地的垃圾目录） */
+    let untracked = 0;
+    if (fs.existsSync(full)) {
+      (function walk(dir) {
+        for (const f of fs.readdirSync(dir)) {
+          const p = path.join(dir, f);
+          const rel = path.relative(ROOT, p).replace(/\\/g, '/');
+          if (isJunk(rel)) continue;
+          let st;
+          try { st = fs.statSync(p); } catch (e) { continue; }
+          if (st.isDirectory()) { walk(p); continue; }
+          if (!tracked.has(rel)) untracked++;
+        }
+      })(full);
+    }
+
+    return { name: d, size: size, count: count, untracked: untracked };
+  });
+
+  const dirty = await dirtyList();
+  const ahead = await countRevs(up + '..HEAD');
+  const behind = await countRevs('HEAD..' + up);
+
+  const contentSize = sections.reduce((a, s) => a + s.size, 0);
+  const contentCount = sections.reduce((a, s) => a + s.count, 0);
+  const untrackedTotal = sections.reduce((a, s) => a + s.untracked, 0);
+
+  sendJson(res, 200, {
+    ok: true,
+    root: ROOT,
+    sections: sections,
+    contentSize: contentSize,
+    contentCount: contentCount,
+    untracked: untrackedTotal,      // 没进 git 的「内容」文件数
+    ahead: ahead,
+    behind: behind,
+    dirty: dirty.length,
+    upstream: up,
+    /* 能不能说「云端有全套备份」 */
+    safe: untrackedTotal === 0 && ahead === 0 && dirty === 0,
+  });
+}
+
+/* 在资源管理器里打开项目文件夹 */
+function openFolder(res) {
+  try {
+    if (process.platform === 'win32') {
+      spawn('explorer.exe', [ROOT], { detached: true, stdio: 'ignore', windowsHide: false }).unref();
+    } else if (process.platform === 'darwin') {
+      spawn('open', [ROOT], { detached: true, stdio: 'ignore' }).unref();
+    } else {
+      spawn('xdg-open', [ROOT], { detached: true, stdio: 'ignore' }).unref();
+    }
+    sendJson(res, 200, { ok: true, message: '已在资源管理器中打开' });
+  } catch (e) {
+    sendJson(res, 200, { ok: false, message: '打不开：' + e.message });
+  }
+}
+
 /* ---------- 回收站 ---------- */
 /* 删文章 / 删图片不再真删，先挪进 tools/.trash/，随时能捞回来。
    .trash/ 在 .gitignore 里，不会进仓库。 */
@@ -895,6 +998,10 @@ async function handle(req, res) {
     if (p === '/api/sync/pull'   && method === 'POST') return await syncPull(res);
     if (p === '/api/sync/force'  && method === 'POST') return await syncForce(req, res);
     if (p === '/api/sync/backups'&& method === 'GET')  return await listBackups(res);
+
+    /* --- 备份与恢复 --- */
+    if (p === '/api/backup'      && method === 'GET')  return await backupInfo(res);
+    if (p === '/api/open-folder' && method === 'POST') return openFolder(res);
 
     /* --- 发布：提交和推送分开，断网时改动也能先落到本地 --- */
     if (p === '/api/commit'  && method === 'POST')   return await commitOnly(req, res);
