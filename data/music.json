@@ -1,9 +1,16 @@
 [
   {
     "src": "music/凡常恩典.mp3",
-    "lrc": "music/凡常恩典-塞壬唱片-MSR&动点.lrc",
     "title": "凡常恩典",
     "artist": "塞壬唱片-MSR&动点",
+    "lrc": "music/凡常恩典-塞壬唱片-MSR&动点.lrc",
     "cover": "images/cover1.jpg"
+  },
+  {
+    "src": "music/Bittersweet_Chocolate.mp3",
+    "title": "Bittersweet Chocolate",
+    "artist": "mr. hong",
+    "lrc": "music/Bittersweet_Chocolate-mr._hong.lrc",
+    "cover": "images/cover2.jpg"
   }
 ]
