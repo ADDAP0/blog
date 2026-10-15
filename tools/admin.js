@@ -700,6 +700,17 @@
     try {
       const r = await api('/api/status');
 
+      /* git 读不到（比如这个文件夹根本不是 git 仓库）时，绝不能显示「已同步」。
+         服务端这时候会回 ok:false、changes 为空、ahead/behind 都是 0，
+         不看 ok 的话就会误报成绿色的「已与 GitHub 同步」。 */
+      if (r.ok === false) {
+        bar.classList.remove('ok', 'dirty', 'ahead');
+        bar.classList.add('error');
+        txt.textContent = '读不到 git 状态';
+        if (typeof r.trash === 'number') $('badgeTrash').textContent = r.trash;
+        return r;
+      }
+
       bar.classList.remove('ok', 'dirty', 'ahead', 'error');
 
       /* 三种「没同步」的情况都要列出来，别漏掉落后云端 */

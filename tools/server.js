@@ -10,7 +10,7 @@
 const http = require('http');
 const fs   = require('fs');
 const path = require('path');
-const { execFile } = require('child_process');
+const { execFile, spawn } = require('child_process');
 
 const ROOT      = path.resolve(__dirname, '..');
 const TOOLS     = __dirname;
@@ -789,7 +789,17 @@ async function commitOnly(req, res) {
   const message = String(d.message || '').trim() || 'chore: 更新站点';
 
   const build = await run('node', ['build-data.js']);
-  await run('git', ['add', '-A']);
+
+  /* 必须检查 add 的结果。add 失败时 git diff --cached 也会说「干净」，
+     界面于是报「没有需要提交的改动」—— 真正的错误被藏起来了。 */
+  const add = await run('git', ['add', '-A']);
+  if (!add.ok) {
+    return sendJson(res, 500, {
+      ok: false, step: 'add',
+      message: 'git add 失败了（改动原样留在工作区，没有丢）',
+      output: (build.out + build.err + add.out + add.err).trim(),
+    });
+  }
 
   const diff = await run('git', ['diff', '--cached', '--quiet']);
   if (diff.ok) {
@@ -821,6 +831,21 @@ async function commitOnly(req, res) {
 
 /* 只推送，不提交 */
 async function pushOnly(res) {
+  /* 先看有没有东西可推。
+     没有东西可推时 git push 会打印 "Everything up-to-date" 并且返回成功 ——
+     那不是「推上去了一些东西」。以前这里照抄 git 的返回值，界面上就会显示
+     「已推送到 GitHub」，很容易让人以为推成功了、结果 GitHub 上什么都没变。 */
+  const ahead = await run('git', ['rev-list', '--count', '@{u}..HEAD']);
+  if (ahead.ok && Number(ahead.out.trim()) === 0) {
+    return sendJson(res, 200, {
+      ok: true,
+      nothingToPush: true,
+      message: '没有需要推送的提交：本地和云端已经一致，这次一个字节都没传。' +
+               '（刚改的东西要先「提交并推送」或「只提交到本地」才会有提交可推）',
+      output: 'Everything up-to-date',
+    });
+  }
+
   const push = await run('git', ['push']);
   const tail = (push.out + push.err).trim();
 
@@ -849,7 +874,16 @@ async function publish(req, res) {
   const message = String(d.message || '').trim() || 'chore: 更新站点';
 
   const build = await run('node', ['build-data.js']);
-  await run('git', ['add', '-A']);
+
+  /* 同 commitOnly：add 失败不能装作「没有改动」 */
+  const add = await run('git', ['add', '-A']);
+  if (!add.ok) {
+    return sendJson(res, 500, {
+      ok: false, step: 'add',
+      message: 'git add 失败了（改动原样留在工作区，没有丢）',
+      output: (build.out + build.err + add.out + add.err).trim(),
+    });
+  }
 
   const diff = await run('git', ['diff', '--cached', '--quiet']);
   let commitOut = '';
